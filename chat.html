@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOUSKIE.tn - Assistant Chat Multi-vendeurs</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Inter font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        /* Custom Colors using the Green/Yellow Theme */
+        :root {
+            --color-primary: #059669;
+            /* Emerald 600 - Professional Green */
+            --color-accent: #F59E0B;
+            /* Amber 500 - Warm Yellow */
+            --color-user-bubble: #4F46E5;
+            /* Indigo 600 - Distinct Blue for User Messages */
+        }
+
+        .text-primary {
+            color: var(--color-primary);
+        }
+
+        .bg-primary {
+            background-color: var(--color-primary);
+        }
+
+        .border-primary {
+            border-color: var(--color-primary);
+        }
+
+        .text-accent {
+            color: var(--color-accent);
+        }
+
+        .bg-user-bubble {
+            background-color: var(--color-user-bubble);
+        }
+
+        /* New class for user bubble color */
+
+        /* Custom smaller font for NOUVEAUTÉ badge */
+        .text-xxs {
+            font-size: 0.65rem;
+            /* Slightly smaller than text-xs (0.75rem) */
+            line-height: 1rem;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb;
+            /* Light background */
+        }
+
+        /* Custom scrollbar for chat history */
+        #chat-history::-webkit-scrollbar,
+        #suggestions-panel::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #chat-history::-webkit-scrollbar-thumb,
+        #suggestions-panel::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 2px;
+        }
+
+        /* Ensure responsive grid layout works for smaller screens */
+        @media (max-width: 1023px) {
+            #suggestions-panel-container {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 30;
+                max-height: 60vh;
+                border-radius: 1.5rem 1.5rem 0 0;
+                transform: translateY(100%);
+                transition: transform 0.3s ease-in-out;
+            }
+
+            #suggestions-panel-container.show {
+                transform: translateY(0);
+                box-shadow: 0 -4px 6px -1px rgb(0 0 0 / 0.1);
+            }
+
+            .suggestions-handle {
+                display: block;
+                width: 3rem;
+                height: 0.375rem;
+                background-color: #E5E7EB;
+                border-radius: 9999px;
+                margin: -0.5rem auto 1rem;
+            }
+
+            /* Hide suggestions by default on mobile */
+            #suggestions-panel-container:not(.show) {
+                display: none;
+            }
+
+            /* Adjust chat container for mobile */
+            .chat-container {
+                height: calc(100vh - 80px);
+            }
+        }
+
+        /* Small Mobile Devices */
+        @media (max-width: 640px) {
+            .modal-content {
+                margin: 0.5rem;
+                width: calc(100% - 1rem);
+            }
+
+            /* Adjust font sizes for mobile */
+            .text-3xl {
+                font-size: 1.5rem;
+            }
+
+            .text-2xl {
+                font-size: 1.25rem;
+            }
+
+            /* Stack buttons on mobile */
+            .mobile-stack {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+
+        /* Tablet Devices */
+        @media (min-width: 641px) and (max-width: 1023px) {
+            .modal-content {
+                max-width: 90%;
+            }
+        }
+
+        /* Horizontal scrolling suggestions in chat */
+        .suggestions-scroll {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            gap: 1rem;
+            padding: 1rem 0;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .suggestion-card {
+            scroll-snap-align: start;
+            min-width: 280px;
+            flex-shrink: 0;
+        }
+
+        /* Hide scrollbar but keep functionality */
+        .suggestions-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Mobile-specific styles */
+        @media (max-width: 1023px) {
+            #suggestions-panel-container {
+                display: none;
+                /* Hide the separate suggestions panel on mobile */
+            }
+
+            .chat-container {
+                height: calc(100vh - 80px);
+                width: 100%;
+            }
+        }
+
+        /* Brand / logo styles */
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .brand-svg {
+            height: 2rem;
+            width: auto;
+            flex-shrink: 0;
+        }
+
+        .brand-wordmark {
+            font-weight: 800;
+            font-size: 1.25rem;
+            line-height: 1;
+            letter-spacing: -0.02em;
+        }
+
+        .brand-wordmark .primary {
+            color: var(--color-primary);
+        }
+
+        .brand-wordmark .accent {
+            color: var(--color-accent);
+            font-weight: 800;
+            margin-left: 0.08rem;
+        }
+
+        .brand-tag {
+            display: block;
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 0.12rem;
+        }
+
+        @media (min-width: 1024px) {
+            .brand-svg {
+                height: 2.4rem;
+            }
+
+            .brand-wordmark {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen antialiased">
+
+    <!-- Loading Overlay (Full Screen, blocks UI during search) -->
+    <div id="loading-overlay"
+        class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div
+            class="bg-white p-8 rounded-2xl shadow-2xl flex flex-col items-center space-y-4 transform scale-100 transition-all duration-300">
+            <div class="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-primary"></div>
+            <p class="text-lg font-semibold text-gray-700">TOUSKIE Assistant recherche...</p>
+            <p class="text-sm text-gray-500">Génération des meilleures suggestions de fournisseurs pour vous.</p>
+        </div>
+    </div>
+
+    <!-- Product Detail Modal (Popup) -->
+    <div id="product-detail-modal"
+        class="fixed inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center z-50 hidden p-4">
+        <div
+            class="bg-white rounded-2xl shadow-2xl w-full max-w-lg modal-content transform scale-100 transition-all duration-300">
+            <!-- Product Image - Responsive height -->
+            <div class="relative w-full h-48 sm:h-64 mb-6 rounded-xl overflow-hidden">
+                <img id="modal-product-image" src="" alt="Product Image"
+                    class="w-full h-full object-cover shadow-lg transition-transform duration-300 hover:scale-105">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+            </div>
+
+            <!-- Close Button - Repositioned -->
+            <button id="close-modal-btn"
+                class="absolute top-4 right-4 text-white hover:text-red-500 transition bg-black/20 p-2 rounded-full backdrop-blur-sm"
+                title="Fermer">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+
+            <!-- Product Details - Mobile friendly spacing -->
+            <div class="space-y-4 sm:space-y-6 p-4 sm:p-6">
+                <!-- Product Name and Price -->
+                <div class="border-b pb-4">
+                    <h3 id="modal-product-name" class="text-2xl font-bold text-primary mb-2"></h3>
+                    <p id="modal-product-price" class="text-3xl font-extrabold text-accent"></p>
+                </div>
+
+                <!-- Vendor Information -->
+                <div class="bg-gray-50 p-4 rounded-xl space-y-3">
+                    <h4 class="text-lg font-semibold text-gray-800 border-b pb-2">Informations Vendeur</h4>
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                            <p class="font-medium text-gray-600">Nom du Vendeur</p>
+                            <p id="modal-vendor-name" class="text-gray-800"></p>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-600">Téléphone</p>
+                            <p id="modal-vendor-phone" class="text-gray-800"></p>
+                        </div>
+                        <div class="col-span-2">
+                            <p class="font-medium text-gray-600">Adresse</p>
+                            <p id="modal-vendor-address" class="text-gray-800"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add to Cart Button -->
+                <button id="modal-add-to-cart-btn"
+                    class="w-full bg-primary text-white p-4 rounded-xl font-medium hover:bg-emerald-700 transition duration-300 flex items-center justify-center group">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        class="h-5 w-5 mr-2 transform group-hover:scale-110 transition" viewBox="0 0 20 20"
+                        fill="currentColor">
+                        <path
+                            d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.375 6.875c.06.301.299.54.6.6l1.375.253 1.375.254.6.6h5.815c.321 0 .618-.21.71-.512l2-7A1 1 0 0017 3H5.257l-.374-1.5H3zM16.5 10.5a.5.5 0 01-1 0 .5.5 0 011 0zm-7-2a.5.5 0 01-1 0 .5.5 0 011 0z" />
+                    </svg>
+                    Ajouter au Panier
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Header - Includes Global Search and Language Toggle -->
+    <header class="bg-white shadow-md sticky top-0 z-20">
+        <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-4">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <!-- Logo -->
+                <h1 class="brand" aria-label="TOUSKIE.tn - Marketplace Tunisienne">
+                    <!-- Emblem: circle + AI-search (network nodes + magnifying glass) -->
+                    <svg class="brand-svg" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img"
+                        aria-hidden="true">
+                        <defs>
+                            <linearGradient id="g1" x1="0" x2="1" y1="0" y2="1">
+                                <stop offset="0" stop-color="#06b6a4" />
+                                <stop offset="1" stop-color="#059669" />
+                            </linearGradient>
+                            <!-- small glow for nodes -->
+                            <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="1.2" result="b" />
+                                <feMerge>
+                                    <feMergeNode in="b" />
+                                    <feMergeNode in="SourceGraphic" />
+                                </feMerge>
+                            </filter>
+                        </defs>
+
+                        <!-- background circle -->
+                        <circle cx="32" cy="32" r="30" fill="url(#g1)" opacity="0.98" />
+
+                        <!-- stylized network (AI) - left side -->
+                        <g stroke="#ffffff" stroke-opacity="0.95" stroke-width="1.4" fill="none" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <line x1="22" y1="30" x2="30" y2="24" />
+                            <line x1="22" y1="30" x2="30" y2="36" />
+                            <line x1="30" y1="24" x2="36" y2="28" />
+                        </g>
+
+                        <!-- network nodes -->
+                        <circle cx="22" cy="30" r="2.2" fill="#ffffff" filter="url(#glow)" />
+                        <circle cx="30" cy="24" r="2.4" fill="#f59e0b" filter="url(#glow)" />
+                        <circle cx="30" cy="36" r="2.2" fill="#f59e0b" filter="url(#glow)" />
+                        <circle cx="36" cy="28" r="2.0" fill="#ffffff" />
+
+                        <!-- magnifying glass (search) - right side, overlapping network -->
+                        <g transform="translate(6,6)">
+                            <circle cx="38" cy="38" r="7.2" fill="none" stroke="#ffffff" stroke-width="1.6"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                            <line x1="44" y1="44" x2="52" y2="52" stroke="#ffffff" stroke-width="2"
+                                stroke-linecap="round" />
+                            <!-- small accent node inside lens to suggest "insight" -->
+                            <circle cx="36" cy="36" r="1.6" fill="#f59e0b" />
+                        </g>
+                    </svg>
+                    <span class="brand-wordmark">
+                        <span class="primary">TOUSKIE</span><span class="accent">.tn</span>
+                        <span class="brand-tag">Tout. Tunisien. IA pour e‑commerce</span>
+                    </span>
+                    <span class="sr-only">TOUSKIE.tn — marketplace multi‑vendeurs (Tunisian AI for e‑commerce)
+                    </span>
+                </h1>
+
+                <!-- Global Site Search - Full width on mobile -->
+                <div class="w-full sm:max-w-xl">
+                    <input type="text" placeholder="Rechercher..."
+                        class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-accent focus:border-accent transition text-sm"
+                        aria-label="Recherche Globale">
+                </div>
+
+                <!-- Icons and Language - Horizontal scroll on very small screens -->
+                <div class="flex items-center space-x-2 sm:space-x-4 overflow-x-auto">
+                    <!-- Language Toggle (Tunisia/Arabic) -->
+                    <button id="lang-toggle-btn"
+                        class="flex items-center text-sm font-medium text-gray-600 hover:text-accent transition duration-150 p-2 rounded-lg hover:bg-gray-100"
+                        title="Changer la langue en Arabe">
+                        <span role="img" aria-label="Drapeau Tunisien" class="text-xl mr-1">🇹🇳</span>
+                        AR
+                    </button>
+
+                    <!-- Cart Icon -->
+                    <button
+                        class="text-gray-600 hover:text-accent transition duration-150 p-2 rounded-full hover:bg-gray-100"
+                        title="Favoris">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                    </button>
+
+                    <!-- Profile Icon -->
+                    <button
+                        class="text-gray-600 hover:text-accent transition duration-150 p-2 rounded-full hover:bg-gray-100"
+                        title="Profil Utilisateur">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Grid - Update for mobile -->
+    <main class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 mt-6 pb-12">
+        <div class="lg:grid lg:grid-cols-5 lg:gap-8 min-h-[500px] lg:h-[75vh]">
+            <!-- Update Chat Interface for mobile -->
+            <div
+                class="lg:col-span-3 flex flex-col bg-white rounded-xl shadow-xl p-4 sm:p-6 mb-6 lg:mb-0 lg:mr-4 lg:border-r lg:border-gray-100 chat-container relative">
+                <!-- Chat Header (Title + Clear Button) -->
+                <div class="flex justify-between items-center mb-4 border-b pb-2">
+                    <h2 class="text-2xl font-semibold text-gray-800">
+                        <span class="text-primary">TOUSKIE</span> Assistant Chat
+                    </h2>
+                    <!-- Clear Chat Button for usability -->
+                    <button id="clear-chat-btn"
+                        class="text-gray-500 hover:text-red-600 transition duration-150 flex items-center text-sm p-1 rounded-md hover:bg-red-50"
+                        title="Démarrer une nouvelle conversation">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Vider le Chat
+                    </button>
+                </div>
+
+                <!-- Chat History Area (scrollable, with input fixed at bottom) -->
+                <div id="chat-history"
+                    class="flex-grow overflow-y-auto space-y-4 pr-2 h-96 sm:h-[32rem] lg:h-full mb-2">
+                    <!-- Initial Welcome Message (Bot) -->
+                    <div class="flex justify-start">
+                        <div class="max-w-lg bg-gray-100 p-3 rounded-xl rounded-tl-none shadow-sm text-gray-700">
+                            <p class="font-semibold text-primary">TOUSKIE Assistant</p>
+                            <p>Bonjour ! Bienvenue sur TOUSKIE.tn, votre marketplace multi-vendeurs. Je suis là pour
+                                vous aider à trouver le produit parfait. Dites-moi ce que vous cherchez !</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Input Form - fixed at bottom on mobile -->
+                <form id="chat-form"
+                    class="flex space-x-3 items-center bg-white py-2 px-0 border-t border-gray-100 sticky bottom-0 left-0 right-0 z-10"
+                    style="position:sticky;">
+                    <input type="text" id="chat-input" placeholder="Rechercher des produits ou poser une question..."
+                        class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary transition duration-150 shadow-inner text-gray-800"
+                        required>
+                    <button type="submit"
+                        class="bg-primary text-white p-3 rounded-lg font-medium hover:bg-emerald-700 transition duration-150 shadow-lg flex items-center justify-center">
+                        <!-- Enhanced Send Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1 -rotate-45" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                        </svg>
+                        Envoyer
+                    </button>
+                </form>
+            </div>
+
+            <!-- Update Suggestions Panel for mobile -->
+            <div id="suggestions-panel-container"
+                class="lg:col-span-2 flex flex-col bg-white rounded-xl shadow-xl p-4 sm:p-6">
+                <!-- Add drag handle for mobile -->
+                <div class="suggestions-handle lg:hidden"></div>
+                <h2 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">
+                    <span class="text-accent">Meilleures Suggestions</span>
+                    <span class="text-sm font-normal text-gray-400 ml-2">(depuis le Chat)</span>
+                </h2>
+
+                <!-- Sorting Control (New Addition) -->
+                <div class="flex justify-end items-center mb-4 space-x-2">
+                    <label for="sort-select" class="text-sm font-medium text-gray-600">Trier par:</label>
+                    <select id="sort-select"
+                        class="p-1.5 border border-gray-300 rounded-lg text-sm focus:ring-primary focus:border-primary transition">
+                        <option value="relevance">Pertinence</option>
+                        <option value="price-asc">Prix: Croissant</option>
+                        <option value="price-desc">Prix: Décroissant</option>
+                        <option value="newest">Nouveauté</option>
+                    </select>
+                </div>
+
+                <!-- Move spinner inside suggestions-panel-container, above suggestions-panel -->
+                <div id="suggestions-spinner" class="hidden flex justify-center py-4">
+                    <div class="animate-spin rounded-full h-8 w-8 border-t-4 border-b-4 border-primary"></div>
+                </div>
+                <div id="suggestions-panel" class="flex-grow overflow-y-auto space-y-4">
+                    <!-- Default Suggestions (Mock Data) -->
+                    <div class="text-center text-gray-500 py-10" id="default-message">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto mb-2 text-accent" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                        Vos suggestions de produits apparaîtront ici après avoir discuté avec notre assistant.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const chatForm = document.getElementById('chat-form');
+            const chatInput = document.getElementById('chat-input');
+            const chatHistory = document.getElementById('chat-history');
+            const suggestionsPanel = document.getElementById('suggestions-panel');
+            const suggestionsSpinner = document.getElementById('suggestions-spinner');
+            const defaultMessage = document.getElementById('default-message');
+            const clearChatBtn = document.getElementById('clear-chat-btn');
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const langToggleBtn = document.getElementById('lang-toggle-btn');
+            const sortSelect = document.getElementById('sort-select');
+
+            // Modal Elements
+            const productDetailModal = document.getElementById('product-detail-modal');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+
+            // State for the current search query and sort key
+            let currentSearchQuery = '';
+            let currentSortKey = 'relevance';
+
+
+            // MOCK PRODUCTS - Updated with Vendor details
+            const mockProducts = [
+                // Prices adjusted for more detail and variety
+                { name: "Huile d'Olive Premium", price: "23.50 TND", numericPrice: 23.50, vendor: "Local Farm", image: "https://placehold.co/100x100/059669/ffffff?text=Oil", link: "https://touskie.tn/store/Local-Farm", isNew: true, address: "Route de Sfax, Sousse", phone: "+216 55 123 456" },
+                { name: "Sac en Cuir Fait Main", price: "149.90 TND", numericPrice: 149.90, vendor: "Artisan Crafts", image: "https://placehold.co/100x100/F59E0B/000000?text=Bag", link: "https://touskie.tn/store/Artisan-Crafts", isNew: false, address: "Rue des Arts, Tunis", phone: "+216 98 765 432" },
+                { name: "Set de Poterie Traditionnel", price: "79.00 TND", numericPrice: 79.00, vendor: "Kairouan Ceramics", image: "https://placehold.co/100x100/9CA3AF/ffffff?text=Pottery", link: "https://touskie.tn/store/Kairouan-Ceramics", isNew: true, address: "Zone Artisanale, Kairouan", phone: "+216 22 345 678" },
+                { name: "Montre Intelligente Z20 Pro", price: "349.99 TND", numericPrice: 349.99, vendor: "Tech Market", image: "https://placehold.co/100x100/1F2937/ffffff?text=Watch", link: "https://touskie.tn/store/Tech-Market", isNew: false, address: "Centre Commercial, Nabeul", phone: "+216 71 890 123" },
+                { name: "Épices Safran", price: "45.90 TND", numericPrice: 45.90, vendor: "Spice Route", image: "https://placehold.co/100x100/34D399/ffffff?text=Saffron", link: "https://touskie.tn/store/Spice-Route", isNew: true, address: "Souk El Attarine, Djerba", phone: "+216 99 012 345" },
+                // --- NEW PRODUCTS ADDED ---
+                { name: "Dattes Deglet Nour (500g)", price: "12.00 TND", numericPrice: 12.00, vendor: "Oasis Foods", image: "https://placehold.co/100x100/A0522D/ffffff?text=Dates", link: "https://touskie.tn/store/Oasis-Foods", isNew: false, address: "Zone Industrielle, Kebili", phone: "+216 20 888 999" },
+                { name: "Bijoux Hérold Traditionnels", price: "275.00 TND", numericPrice: 275.00, vendor: "Silver Heritage", image: "https://placehold.co/100x100/C0C0C0/000000?text=Jewelry", link: "https://touskie.tn/store/Silver-Heritage", isNew: true, address: "Médina, Tunis", phone: "+216 97 111 222" },
+                { name: "Petit Tapis de Kairouan", price: "199.50 TND", numericPrice: 199.50, vendor: "Kairouan Tissage", image: "https://placehold.co/100x100/8B4513/ffffff?text=Carpet", link: "https://touskie.tn/store/Kairouan-Tissage", isNew: false, address: "Centre Ville, Kairouan", phone: "+216 77 444 555" },
+                { name: "T-shirt Coton Bio 'I Love TN'", price: "35.00 TND", numericPrice: 35.00, vendor: "Teez & Co.", image: "https://placehold.co/100x100/38B2AC/ffffff?text=T-Shirt", link: "https://touskie.tn/store/Teez-Co", isNew: true, address: "Lac 1, Tunis", phone: "+216 52 666 777" },
+                { name: "Thé Vert Bio", price: "18.00 TND", numericPrice: 18.00, vendor: "Green Leaf", image: "https://placehold.co/100x100/228B22/ffffff?text=Tea", link: "https://touskie.tn/store/Green-Leaf", isNew: false, address: "Rue du Marché, Sfax", phone: "+216 61 222 333" },
+                { name: "Lampe Artisanale Berbère", price: "89.00 TND", numericPrice: 89.00, vendor: "Berber Lights", image: "https://placehold.co/100x100/FFD700/000000?text=Lamp", link: "https://touskie.tn/store/Berber-Lights", isNew: true, address: "Village Amazigh, Tataouine", phone: "+216 62 444 555" },
+                { name: "Couscoussière Inox", price: "65.00 TND", numericPrice: 65.00, vendor: "Cuisine Pro", image: "https://placehold.co/100x100/808080/ffffff?text=Couscous", link: "https://touskie.tn/store/Cuisine-Pro", isNew: false, address: "Zone Industrielle, Tunis", phone: "+216 63 555 666" },
+                { name: "Parfum Jasmin Tunisien", price: "120.00 TND", numericPrice: 120.00, vendor: "Jasmine Essence", image: "https://placehold.co/100x100/FFF8DC/000000?text=Parfum", link: "https://touskie.tn/store/Jasmine-Essence", isNew: true, address: "Avenue Habib Bourguiba, Tunis", phone: "+216 64 777 888" },
+                { name: "Chemise Lin Homme", price: "59.00 TND", numericPrice: 59.00, vendor: "Linen Wear", image: "https://placehold.co/100x100/ADD8E6/000000?text=Chemise", link: "https://touskie.tn/store/Linen-Wear", isNew: false, address: "Centre Ville, Monastir", phone: "+216 65 999 000" },
+                { name: "Panier Osier Traditionnel", price: "27.00 TND", numericPrice: 27.00, vendor: "Osier Art", image: "https://placehold.co/100x100/DEB887/000000?text=Panier", link: "https://touskie.tn/store/Osier-Art", isNew: true, address: "Souk, Mahdia", phone: "+216 66 111 222" },
+                { name: "Bougie Parfumée Fleur d'Oranger", price: "32.00 TND", numericPrice: 32.00, vendor: "Candle House", image: "https://placehold.co/100x100/FFA07A/000000?text=Bougie", link: "https://touskie.tn/store/Candle-House", isNew: false, address: "Rue des Fleurs, Ariana", phone: "+216 67 333 444" },
+                { name: "Chapeau Paille Plage", price: "22.00 TND", numericPrice: 22.00, vendor: "Beach Style", image: "https://placehold.co/100x100/F5DEB3/000000?text=Chapeau", link: "https://touskie.tn/store/Beach-Style", isNew: true, address: "Zone Touristique, Hammamet", phone: "+216 68 555 666" },
+                { name: "Tasse à Café Céramique", price: "15.00 TND", numericPrice: 15.00, vendor: "Ceramix", image: "https://placehold.co/100x100/FFFFFF/000000?text=Tasse", link: "https://touskie.tn/store/Ceramix", isNew: false, address: "Rue Artisanale, Nabeul", phone: "+216 69 777 888" },
+                { name: "Bracelet Argent Fin", price: "210.00 TND", numericPrice: 210.00, vendor: "Argent Chic", image: "https://placehold.co/100x100/C0C0C0/000000?text=Bracelet", link: "https://touskie.tn/store/Argent-Chic", isNew: true, address: "Médina, Sousse", phone: "+216 70 999 000" },
+                // Add more fake products for lazy loading test
+                { name: "Savon Artisanal Lavande", price: "8.00 TND", numericPrice: 8.00, vendor: "Soap Factory", image: "https://placehold.co/100x100/E6E6FA/000000?text=Savon", link: "#", isNew: false, address: "Rue des Jardins, Sfax", phone: "+216 71 111 222" },
+                { name: "Porte-clés Tunisien", price: "5.00 TND", numericPrice: 5.00, vendor: "KeyArt", image: "https://placehold.co/100x100/FFDAB9/000000?text=Clés", link: "#", isNew: true, address: "Souk, Tunis", phone: "+216 72 222 333" },
+                { name: "Tablier Cuisine Brodé", price: "25.00 TND", numericPrice: 25.00, vendor: "Cuisine Chic", image: "https://placehold.co/100x100/FFFACD/000000?text=Tablier", link: "#", isNew: false, address: "Zone Artisanale, Sousse", phone: "+216 73 333 444" },
+                { name: "Coussin Décoratif Berbère", price: "40.00 TND", numericPrice: 40.00, vendor: "Berber Home", image: "https://placehold.co/100x100/FFE4E1/000000?text=Coussin", link: "#", isNew: true, address: "Village Amazigh, Tataouine", phone: "+216 74 444 555" },
+                { name: "Mug Céramique Peint", price: "17.00 TND", numericPrice: 17.00, vendor: "Ceramix", image: "https://placehold.co/100x100/AFEEEE/000000?text=Mug", link: "#", isNew: false, address: "Rue Artisanale, Nabeul", phone: "+216 75 555 666" },
+                { name: "Boucles d'Oreilles Argent", price: "95.00 TND", numericPrice: 95.00, vendor: "Argent Chic", image: "https://placehold.co/100x100/C0C0C0/000000?text=Boucles", link: "#", isNew: true, address: "Médina, Sousse", phone: "+216 76 666 777" },
+                { name: "Tapis de Prière", price: "60.00 TND", numericPrice: 60.00, vendor: "Kairouan Tissage", image: "https://placehold.co/100x100/8B0000/FFFFFF?text=Tapis", link: "#", isNew: false, address: "Centre Ville, Kairouan", phone: "+216 77 777 888" },
+                { name: "Bague Ornée Pierre Bleue", price: "130.00 TND", numericPrice: 130.00, vendor: "Bijoux Bleu", image: "https://placehold.co/100x100/0000CD/FFFFFF?text=Bague", link: "#", isNew: true, address: "Rue des Bijoux, Tunis", phone: "+216 78 888 999" },
+                { name: "Panier Fruits Osier", price: "20.00 TND", numericPrice: 20.00, vendor: "Osier Art", image: "https://placehold.co/100x100/DEB887/000000?text=Fruits", link: "#", isNew: false, address: "Souk, Mahdia", phone: "+216 79 999 000" },
+                { name: "Torchon Coton Bio", price: "7.00 TND", numericPrice: 7.00, vendor: "Teez & Co.", image: "https://placehold.co/100x100/FFF8DC/000000?text=Torchon", link: "#", isNew: true, address: "Lac 1, Tunis", phone: "+216 80 111 222" },
+                { name: "Bougie Citronnelle", price: "12.00 TND", numericPrice: 12.00, vendor: "Candle House", image: "https://placehold.co/100x100/FFFFE0/000000?text=Bougie", link: "#", isNew: false, address: "Rue des Fleurs, Ariana", phone: "+216 81 222 333" },
+                { name: "Chèche Tunisien", price: "28.00 TND", numericPrice: 28.00, vendor: "Fashion TN", image: "https://placehold.co/100x100/ADD8E6/000000?text=Chèche", link: "#", isNew: true, address: "Centre Ville, Monastir", phone: "+216 82 333 444" },
+                { name: "Plateau Bois Olive", price: "55.00 TND", numericPrice: 55.00, vendor: "Olive Wood", image: "https://placehold.co/100x100/8B4513/FFFFFF?text=Plateau", link: "#", isNew: false, address: "Zone Artisanale, Sfax", phone: "+216 83 444 555" },
+                { name: "T-shirt Femme Brodé", price: "38.00 TND", numericPrice: 38.00, vendor: "Teez & Co.", image: "https://placehold.co/100x100/FFC0CB/000000?text=T-Shirt", link: "#", isNew: true, address: "Lac 1, Tunis", phone: "+216 84 555 666" },
+                { name: "Bracelet Cuir Homme", price: "45.00 TND", numericPrice: 45.00, vendor: "Artisan Crafts", image: "https://placehold.co/100x100/A0522D/FFFFFF?text=Bracelet", link: "#", isNew: false, address: "Rue des Arts, Tunis", phone: "+216 85 666 777" },
+                { name: "Couscous Traditionnel", price: "30.00 TND", numericPrice: 30.00, vendor: "Cuisine Pro", image: "https://placehold.co/100x100/FFD700/000000?text=Couscous", link: "#", isNew: true, address: "Zone Industrielle, Tunis", phone: "+216 86 777 888" },
+                { name: "Parfum Fleur de Jasmin", price: "110.00 TND", numericPrice: 110.00, vendor: "Jasmine Essence", image: "https://placehold.co/100x100/FFF8DC/000000?text=Parfum", link: "#", isNew: false, address: "Avenue Habib Bourguiba, Tunis", phone: "+216 87 888 999" },
+                { name: "Chemise Femme Lin", price: "62.00 TND", numericPrice: 62.00, vendor: "Linen Wear", image: "https://placehold.co/100x100/ADD8E6/000000?text=Chemise", link: "#", isNew: true, address: "Centre Ville, Monastir", phone: "+216 88 999 000" },
+                { name: "Panier Osier Petit", price: "15.00 TND", numericPrice: 15.00, vendor: "Osier Art", image: "https://placehold.co/100x100/DEB887/000000?text=Panier", link: "#", isNew: false, address: "Souk, Mahdia", phone: "+216 89 111 222" },
+                { name: "Bougie Parfumée Vanille", price: "18.00 TND", numericPrice: 18.00, vendor: "Candle House", image: "https://placehold.co/100x100/FFFACD/000000?text=Bougie", link: "#", isNew: true, address: "Rue des Fleurs, Ariana", phone: "+216 90 222 333" }
+            ];
+
+            // --- Chat/UI Utility Functions ---
+
+            const scrollToBottom = () => {
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+            };
+
+            // Utility to generate suggestion cards for mobile (all buttons + hand icons)
+            function getSuggestionsCardsHTML(products) {
+                return `
+            <div class="suggestions-scroll mt-4">
+                ${products.map((product, idx) => `
+                    <div class="suggestion-card bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
+                        <div class="flex items-start space-x-3">
+                            <div class="relative w-16 h-16 flex-shrink-0">
+                                <img src="${product.image}" alt="${product.name}" loading="lazy" class="w-full h-full object-cover rounded-lg">
+                                ${product.isNew ? `<span class="absolute top-1 left-1 text-xxs font-semibold text-white bg-red-500 px-1.5 py-0.5 rounded-md">NOUVEAUTÉ</span>` : ''}
+                            </div>
+                            <div class="flex-grow">
+                                <p class="font-bold text-md text-gray-800">${product.name}</p>
+                                <p class="text-sm text-gray-500">${product.vendor}</p>
+                                <p class="font-bold text-lg text-accent mt-1">${product.price}</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center mt-3 pt-3 border-t gap-2">
+                            <button onclick="window.showProductDetailsByIndex(${idx})" class="text-sm font-medium text-primary">Voir détails</button>
+                            <!-- Replace text button with heart icon -->
+                            <button onclick="window.addToCart('${product.name.replace(/'/g, "\\'")}')" 
+                                class="p-2 rounded-full bg-gray-100 hover:bg-red-50 hover:text-red-500 transition shadow-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                </svg>
+                            </button>
+                            <button onclick="window.open('${product.link}', '_blank')" class="bg-gray-100 px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-primary hover:text-white transition-all duration-200 flex items-center space-x-1">
+                                <span>Boutique</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="flex justify-end items-center gap-3 mt-2">
+                            <!-- Like button (more elegant) -->
+                            <button title="J'aime cette suggestion" 
+                                class="flex items-center gap-1 p-2 rounded-lg hover:bg-gray-100 group transition-all duration-200">
+                                <svg class="w-5 h-5 text-gray-400 group-hover:text-green-500 transition-colors" 
+                                    viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M7 22V11M2 13V20C2 21.1046 2.89543 22 4 22H17.4262C18.907 22 20.1662 20.9197 20.3814 19.4562L21.4844 11.4562C21.7508 9.6389 20.3273 8 18.5292 8H15C14.4477 8 14 7.55228 14 7V4C14 2.34315 12.6569 1 11 1V1C9.34315 1 8 2.34315 8 4V4.5C8 5.88071 7.11929 7 5.73858 7V7C3.68871 7 2 8.68871 2 10.7386V13" 
+                                        stroke="currentColor" 
+                                        stroke-width="2" 
+                                        stroke-linecap="round"
+                                        class="group-hover:stroke-green-500"/>
+                                </svg>
+                            </button>
+                            <!-- Dislike button (more elegant) -->
+                            <button title="Je n'aime pas cette suggestion" 
+                                class="flex items-center gap-1 p-2 rounded-lg hover:bg-gray-100 group transition-all duration-200">
+                                <svg class="w-5 h-5 text-gray-400 group-hover:text-red-500 transition-colors" 
+                                    viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M17 2V13M22 11V4C22 2.89543 21.1046 2 20 2H6.57384C5.09296 2 3.83384 3.08034 3.61857 4.54376L2.51557 12.5438C2.24916 14.3611 3.67266 16 5.47082 16H9C9.55228 16 10 16.4477 10 17V20C10 21.6569 11.3431 23 13 23V23C14.6569 23 16 21.6569 16 20V19.5C16 18.1193 16.8807 17 18.2614 17V17C20.3113 17 22 15.3113 22 13.2614V11" 
+                                        stroke="currentColor" 
+                                        stroke-width="2" 
+                                        stroke-linecap="round"
+                                        class="group-hover:stroke-red-500"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+            }
+
+            // Update addMessage to accept suggestions for mobile
+            const addMessage = (text, isUser = false, suggestions = []) => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `flex ${isUser ? 'justify-end' : 'justify-start'}`;
+
+                // Show suggestions as cards in bot message on mobile
+                const suggestionsHTML = !isUser && suggestions.length > 0 && window.innerWidth < 1024
+                    ? getSuggestionsCardsHTML(suggestions)
+                    : '';
+
+                messageDiv.innerHTML = `
+            <div class="max-w-lg ${isUser ? 'bg-user-bubble text-white' : 'bg-gray-100 text-gray-700'}
+                p-3 rounded-xl ${isUser ? 'rounded-br-none' : 'rounded-tl-none'} shadow-sm">
+                ${!isUser ? '<p class="font-semibold text-primary/90">TOUSKIE Assistant</p>' : ''}
+                <p>${text}</p>
+                ${suggestionsHTML}
+            </div>
+        `;
+                chatHistory.appendChild(messageDiv);
+                scrollToBottom();
+
+                // Show suggestions panel after bot response on mobile
+                if (!isUser) {
+                    toggleSuggestions(true);
+                }
+            };
+
+            // --- Modal Functions ---
+
+            let currentProductInModal = null;
+
+            const showProductDetails = (product) => {
+                currentProductInModal = product;
+                document.getElementById('modal-product-name').textContent = product.name;
+                document.getElementById('modal-product-price').textContent = product.price;
+                document.getElementById('modal-vendor-name').textContent = product.vendor;
+                document.getElementById('modal-vendor-address').textContent = product.address;
+                document.getElementById('modal-vendor-phone').textContent = product.phone;
+                document.getElementById('modal-product-image').src = product.image;
+
+                productDetailModal.classList.remove('hidden');
+            };
+
+            const closeModal = () => {
+                productDetailModal.classList.add('hidden');
+                currentProductInModal = null;
+            };
+
+            // Add state tracking for favorites
+            const favorites = new Set(); // Store favorite product IDs
+
+            // Update addToCart function to handle favorites
+            const addToCart = (productName) => {
+                const btn = event.currentTarget;
+                if (favorites.has(productName)) {
+                    favorites.delete(productName);
+                    btn.classList.remove('text-red-500', 'bg-red-50');
+                    btn.querySelector('svg').setAttribute('fill', 'none');
+                    alert(`"${productName}" retiré des favoris !`);
+                } else {
+                    favorites.add(productName);
+                    btn.classList.add('text-red-500', 'bg-red-50');
+                    btn.querySelector('svg').setAttribute('fill', 'currentColor');
+                    alert(`"${productName}" ajouté aux favoris !`);
+                }
+            };
+
+            // Add new state tracking for likes/dislikes (near the favorites Set)
+            const likedProducts = new Set();
+            const dislikedProducts = new Set();
+
+            // Add new function for handling likes/dislikes (near addToCart function)
+            const handleFeedback = (productId, type) => {
+                const btn = event.currentTarget;
+                const otherType = type === 'like' ? 'dislike' : 'like';
+                const currentSet = type === 'like' ? likedProducts : dislikedProducts;
+                const otherSet = type === 'like' ? dislikedProducts : likedProducts;
+
+                if (currentSet.has(productId)) {
+                    // Remove feedback
+                    currentSet.delete(productId);
+                    btn.classList.remove(type === 'like' ? 'text-green-500' : 'text-red-500');
+                    btn.classList.add('text-gray-400');
+                } else {
+                    // Add new feedback and remove opposite if exists
+                    currentSet.add(productId);
+                    otherSet.delete(productId);
+                    btn.classList.remove('text-gray-400');
+                    btn.classList.add(type === 'like' ? 'text-green-500' : 'text-red-500');
+
+                    // Reset opposite button
+                    const otherBtn = btn.parentElement.querySelector(`[data-${otherType}]`);
+                    otherBtn.classList.remove(type === 'like' ? 'text-red-500' : 'text-green-500');
+                    otherBtn.classList.add('text-gray-400');
+                }
+            };
+
+            closeModalBtn.addEventListener('click', closeModal);
+            document.getElementById('modal-add-to-cart-btn').addEventListener('click', () => {
+                if (currentProductInModal) {
+                    addToCart(currentProductInModal.name);
+                    closeModal();
+                }
+            });
+            productDetailModal.addEventListener('click', (e) => {
+                if (e.target === productDetailModal) {
+                    closeModal();
+                }
+            });
+
+            // --- Sorting Logic (New Function) ---
+
+            /**
+             * Sorts the given array of products based on the sort key.
+             * @param {Array} products 
+             * @param {string} sortKey 
+             * @returns {Array} Sorted products array
+             */
+            const sortProducts = (products, sortKey) => {
+                // Create a shallow copy to avoid modifying the original array in place
+                const sortedProducts = [...products];
+
+                switch (sortKey) {
+                    case 'price-asc':
+                        // Sort by numeric price ascending
+                        sortedProducts.sort((a, b) => a.numericPrice - b.numericPrice);
+                        break;
+                    case 'price-desc':
+                        // Sort by numeric price descending
+                        sortedProducts.sort((a, b) => b.numericPrice - a.numericPrice);
+                        break;
+                    case 'newest':
+                        // Sort by 'isNew' flag (true first), then by name as a tie-breaker
+                        sortedProducts.sort((a, b) => {
+                            if (a.isNew && !b.isNew) return -1;
+                            if (!a.isNew && b.isNew) return 1;
+                            return a.name.localeCompare(b.name);
+                        });
+                        break;
+                    case 'relevance':
+                    default:
+                        // Maintain the current order (which is based on the mock data's 'relevance' order)
+                        // If implementing real search, this would be the score order.
+                        break;
+                }
+                return sortedProducts;
+            };
+
+            // --- Suggestions Logic ---
+
+            // Function to filter and display product suggestions (now accepts the sortKey)
+            const displaySuggestions = (query, sortKey = 'relevance') => {
+                suggestionsPanel.innerHTML = ''; // Clear existing suggestions
+                currentSearchQuery = query; // Update the state
+                currentSortKey = sortKey; // Update the state
+
+                if (defaultMessage) defaultMessage.classList.add('hidden');
+
+                const lowerQuery = query.toLowerCase();
+                let filteredResults = [];
+
+                // 1. Filtering Logic (Updated to include new products: Dattes, Bijoux, Tapis)
+                if (lowerQuery.includes('oil') || lowerQuery.includes('food') || lowerQuery.includes('huile') || lowerQuery.includes('nourriture') || lowerQuery.includes('épice') || lowerQuery.includes('datte')) {
+                    // Food/Grocery
+                    filteredResults = mockProducts.filter(p =>
+                        p.name.includes('Olive') || p.name.includes('Saffron') || p.name.includes('Huile') || p.name.includes('Épices') || p.name.includes('Dattes')
+                    );
+                } else if (lowerQuery.includes('bag') || lowerQuery.includes('fashion') || lowerQuery.includes('sac') || lowerQuery.includes('mode') || lowerQuery.includes('bijoux') || lowerQuery.includes('t-shirt')) {
+                    // Fashion/Apparel/Accessories
+                    filteredResults = mockProducts.filter(p =>
+                        p.name.includes('Bag') || p.name.includes('Cuir') || p.name.includes('Bijoux') || p.name.includes('T-shirt')
+                    );
+                } else if (lowerQuery.includes('tech') || lowerQuery.includes('smart') || lowerQuery.includes('technologie') || lowerQuery.includes('montre')) {
+                    // Tech
+                    filteredResults = mockProducts.filter(p =>
+                        p.name.includes('Smartwatch') || p.name.includes('Montre') || p.name.includes('Z20 Pro')
+                    );
+                } else if (lowerQuery.includes('tapis') || lowerQuery.includes('decor') || lowerQuery.includes('poterie') || lowerQuery.includes('maison')) {
+                    // Home/Decor
+                    filteredResults = mockProducts.filter(p =>
+                        p.name.includes('Tapis') || p.name.includes('Poterie')
+                    );
+                }
+                else {
+                    // Default/General query results (No initial filtering if query is generic or unknown)
+                    filteredResults = mockProducts;
+                }
+
+                // 2. Sorting Logic (Applies to the filtered set)
+                const sortedResults = sortProducts(filteredResults, sortKey);
+
+                // Lazy loading: render initial batch, then load more on scroll
+                const batchSize = 8;
+                let renderedCount = 0;
+                let loading = false;
+
+                // Remove previous scroll handler to avoid duplicates
+                suggestionsPanel.onscroll = null;
+
+                function renderBatch() {
+                    loading = true;
+                    if (suggestionsSpinner) suggestionsSpinner.classList.remove('hidden');
+                    setTimeout(() => {
+                        const end = Math.min(renderedCount + batchSize, sortedResults.length);
+                        for (let i = renderedCount; i < end; i++) {
+                            const product = sortedResults[i];
+                            const newBadgeHTML = product.isNew ?
+                                `<span class="absolute top-1 left-1 text-xxs font-semibold text-white bg-red-500 px-1.5 py-0.5 rounded-md shadow-lg z-10">NOUVEAUTÉ</span>` : '';
+                            const card = document.createElement('div');
+                            card.className = 'relative flex flex-col bg-white border border-gray-200 rounded-xl p-3 hover:shadow-xl hover:scale-[1.01] transition duration-300 transform group';
+                            card.innerHTML = `
+                        <!-- 1. Product Image (with NOUVEAUTÉ overlay), Name, Vendor, and Details Button -->
+                        <div class="flex items-start space-x-3 mb-3">
+                            <!-- Product Image Container (relative for badge) -->
+                            <div class="relative w-16 h-16 flex-shrink-0">
+                                <img src="${product.image}" loading="lazy" onerror="this.onerror=null; this.src='https://placehold.co/64x64/9CA3AF/ffffff?text=Img'"
+                                    alt="${product.name}" class="w-full h-full object-cover rounded-lg border border-gray-100 shadow-md">
+                                ${newBadgeHTML}
+                            </div>
+                            
+                            <div class="flex-grow">
+                                <!-- Name and Vendor -->
+                                <div class="flex items-center space-x-2">
+                                    <p class="font-bold text-md text-gray-800 group-hover:text-primary transition">${product.name}</p>
+                                </div>
+                                <p class="text-sm text-gray-500">${product.vendor}</p>
+                            </div>
+                            <!-- Details Button -->
+                            <div class="flex flex-col items-end flex-shrink-0 mt-[-5px]">
+                                <button class="show-details-btn text-gray-400 hover:text-primary transition text-sm flex items-center mt-1 p-1 rounded-md hover:bg-gray-50" title="Afficher les détails du vendeur">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Détails
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 2. Price at the Bottom -->
+                        <div class="flex justify-end items-center mb-3 pt-2 border-t border-dashed border-gray-100">
+                            <div class="flex items-center space-x-2">
+                                <p class="font-extrabold text-2xl text-accent">${product.price}</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 3. Action buttons -->
+                        <div class="flex justify-between items-center pt-3 border-t">
+                            <button class="add-to-cart-btn bg-gray-100 p-2 rounded-full text-gray-600 hover:bg-red-50 hover:text-red-500 transition shadow-sm" title="Ajouter aux favoris">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                </svg>
+                            </button>
+                            <button class="go-to-store-btn bg-gray-100 px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-primary hover:text-white transition-all duration-200 flex items-center space-x-1" title="Visiter le site web du vendeur">
+                                <span>Boutique</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="flex justify-end items-center gap-3 mt-2">
+                            <!-- Like button (clickable) -->
+                            <button 
+                                data-like="${product.name}"
+                                onclick="window.handleFeedback(\`${product.name}\`, 'like')"
+                                title="J'aime cette suggestion" 
+                                class="flex items-center gap-1 p-2 rounded-lg hover:bg-green-100 group transition-all duration-200 ${likedProducts.has(product.name) ? 'text-green-600' : 'text-gray-400'}">
+                                <svg class="w-5 h-5 transition-colors" viewBox="0 0 24 24" fill="none">
+                                    <path d="M7 22V11M2 13V20C2 21.1046 2.89543 22 4 22H17.4262C18.907 22 20.1662 20.9197 20.3814 19.4562L21.4844 11.4562C21.7508 9.6389 20.3273 8 18.5292 8H15C14.4477 8 14 7.55228 14 7V4C14 2.34315 12.6569 1 11 1V1C9.34315 1 8 2.34315 8 4V4.5C8 5.88071 7.11929 7 5.73858 7V7C3.68871 7 2 8.68871 2 10.7386V13" 
+                                        stroke="currentColor" 
+                                        stroke-width="2" 
+                                        stroke-linecap="round"
+                                        class="group-hover:stroke-green-600"/>
+                                </svg>
+                            </button>
+                            <!-- Dislike button (clickable) -->
+                            <button 
+                                data-dislike="${product.name}"
+                                onclick="window.handleFeedback(\`${product.name}\`, 'dislike')"
+                                title="Je n'aime pas cette suggestion" 
+                                class="flex items-center gap-1 p-2 rounded-lg hover:bg-red-100 group transition-all duration-200 ${dislikedProducts.has(product.name) ? 'text-red-600' : 'text-gray-400'}">
+                                <svg class="w-5 h-5 transition-colors" viewBox="0 0 24 24" fill="none">
+                                    <path d="M17 2V13M22 11V4C22 2.89543 21.1046 2 20 2H6.57384C5.09296 2 3.83384 3.08034 3.61857 4.54376L2.51557 12.5438C2.24916 14.3611 3.67266 16 5.47082 16H9C9.55228 16 10 16.4477 10 17V20C10 21.6569 11.3431 23 13 23V23C14.6569 23 16 21.6569 16 20V19.5C16 18.1193 16.8807 17 18.2614 17V17C20.3113 17 22 15.3113 22 13.2614V11" 
+                                        stroke="currentColor" 
+                                        stroke-width="2" 
+                                        stroke-linecap="round"
+                                        class="group-hover:stroke-red-600"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                            // Attach Event Listeners
+                            card.querySelector('.show-details-btn').addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                showProductDetails(product);
+                            });
+
+                            card.querySelector('.go-to-store-btn').addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                window.open(product.link, '_blank');
+                            });
+
+                            card.querySelector('.add-to-cart-btn').addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                addToCart(product.name);
+                            });
+
+                            suggestionsPanel.appendChild(card);
+                        }
+                        renderedCount = end;
+                        if (suggestionsSpinner) suggestionsSpinner.classList.add('hidden');
+                        loading = false;
+                    }, 600); // Simulate loading delay
+                }
+
+                if (sortedResults.length > 0) {
+                    renderBatch();
+                    suggestionsPanel.onscroll = function () {
+                        // Only trigger if not already loading and more cards remain
+                        if (!loading && suggestionsPanel.scrollTop + suggestionsPanel.clientHeight >= suggestionsPanel.scrollHeight - 10) {
+                            if (renderedCount < sortedResults.length) {
+                                renderBatch();
+                            }
+                        }
+                    };
+                } else {
+                    if (suggestionsSpinner) suggestionsSpinner.classList.add('hidden');
+                    suggestionsPanel.innerHTML = `<div class="text-center text-gray-500 py-10">
+            <p>Aucune suggestion immédiate trouvée pour cette requête, mais continuez à discuter !</p>
+        </div>`;
+                }
+            };
+
+            // Function to handle the chat submission
+            const handleChatSubmit = (event) => {
+                event.preventDefault();
+                const userQuery = chatInput.value.trim();
+                if (!userQuery) return;
+
+                addMessage(userQuery, true);
+                chatInput.value = '';
+                loadingOverlay.classList.remove('hidden');
+
+                setTimeout(() => {
+                    loadingOverlay.classList.add('hidden');
+
+                    // Generate Bot Response
+                    let botResponse;
+                    if (userQuery.toLowerCase().includes('hello') || userQuery.toLowerCase().includes('hi') || userQuery.toLowerCase().includes('bonjour')) {
+                        botResponse = "Ahlan ! Bonjour ! Je suis l'Assistant TOUSKIE, prêt à vous aider à naviguer dans notre boutique multi-vendeurs. Quel type de produits vous intéresse aujourd'hui ?";
+                    } else if (userQuery.toLowerCase().includes('oil') || userQuery.toLowerCase().includes('food') || userQuery.toLowerCase().includes('nourriture') || userQuery.toLowerCase().includes('épice') || userQuery.toLowerCase().includes('datte')) {
+                        botResponse = "Excellente idée ! J'ai immédiatement filtré et mis à jour le panneau de suggestions avec des produits alimentaires (comme nos nouvelles Dattes Deglet Nour) et d'épicerie de qualité supérieure de nos fournisseurs locaux certifiés. Que pensez-vous de cette sélection ?";
+                    } else if (userQuery.toLowerCase().includes('bag') || userQuery.toLowerCase().includes('fashion') || userQuery.toLowerCase().includes('sac') || userQuery.toLowerCase().includes('mode') || userQuery.toLowerCase().includes('bijoux') || userQuery.toLowerCase().includes('t-shirt')) {
+                        botResponse = "Nos artisans tunisiens offrent de superbes accessoires et vêtements faits main ! J'ai affiché les meilleurs choix de cuir, bijoux et textile (comme nos nouveaux T-shirts) dans le panneau de suggestions. Faites-moi savoir si vous avez besoin d'un autre style !";
+                    } else if (userQuery.toLowerCase().includes('tapis') || userQuery.toLowerCase().includes('decor') || userQuery.toLowerCase().includes('poterie') || userQuery.toLowerCase().includes('maison')) {
+                        botResponse = "Pour la maison et la décoration, nous avons de magnifiques articles ! Le panneau de suggestions affiche maintenant nos choix de Poterie et de Tapis de Kairouan. Comment puis-je vous aider davantage ?";
+                    } else {
+                        botResponse = `Compris. J'ai lancé une recherche générale de produits liés à "${userQuery}". Veuillez consulter le panneau des meilleures suggestions pour les meilleures recommandations !`;
+                    }
+
+                    // Filter products based on query (same as your filtering logic)
+                    let filteredProducts = [];
+                    const lowerQuery = userQuery.toLowerCase();
+                    if (lowerQuery.includes('oil') || lowerQuery.includes('food') || lowerQuery.includes('nourriture') || lowerQuery.includes('épice') || lowerQuery.includes('datte')) {
+                        filteredProducts = mockProducts.filter(p =>
+                            p.name.includes('Olive') || p.name.includes('Saffron') || p.name.includes('Huile') || p.name.includes('Épices') || p.name.includes('Dattes')
+                        );
+                    } else if (lowerQuery.includes('bag') || lowerQuery.includes('fashion') || lowerQuery.includes('sac') || lowerQuery.includes('mode') || lowerQuery.includes('bijoux') || lowerQuery.includes('t-shirt')) {
+                        filteredProducts = mockProducts.filter(p =>
+                            p.name.includes('Bag') || p.name.includes('Cuir') || p.name.includes('Bijoux') || p.name.includes('T-shirt')
+                        );
+                    } else if (lowerQuery.includes('tech') || lowerQuery.includes('smart') || lowerQuery.includes('technologie') || lowerQuery.includes('montre')) {
+                        filteredProducts = mockProducts.filter(p =>
+                            p.name.includes('Smartwatch') || p.name.includes('Montre') || p.name.includes('Z20 Pro')
+                        );
+                    } else if (lowerQuery.includes('tapis') || lowerQuery.includes('decor') || lowerQuery.includes('poterie') || lowerQuery.includes('maison')) {
+                        filteredProducts = mockProducts.filter(p =>
+                            p.name.includes('Tapis') || p.name.includes('Poterie')
+                        );
+                    } else {
+                        filteredProducts = mockProducts;
+                    }
+
+                    // Sort and slice for top 4
+                    const sortedProducts = sortProducts(filteredProducts, currentSortKey).slice(0, 4);
+
+                    // Show suggestions in chat on mobile, in panel on desktop
+                    addMessage(botResponse, false, sortedProducts);
+
+                    if (window.innerWidth >= 1024) {
+                        displaySuggestions(userQuery, currentSortKey);
+                    }
+                }, 2000);
+            };
+
+            // --- Main Event Listeners ---
+
+            chatForm.addEventListener('submit', handleChatSubmit);
+
+            clearChatBtn.addEventListener('click', () => {
+                chatHistory.innerHTML = '';
+                // Re-add initial welcome message
+                addMessage("Bonjour ! Bienvenue sur TOUSKIE.tn, votre marketplace multi-vendeurs. Je suis là pour vous aider à trouver le produit parfait. Dites-moi ce que vous cherchez !", false);
+                suggestionsPanel.innerHTML = '';
+                if (defaultMessage) defaultMessage.classList.remove('hidden');
+                // Reset sort selection to relevance and display defaults
+                sortSelect.value = 'relevance';
+                displaySuggestions('');
+                toggleSuggestions(false);
+            });
+
+            // New Event Listener for Sorting
+            sortSelect.addEventListener('change', (e) => {
+                // When sort changes, re-display suggestions using the last query and new sort key
+                suggestionsPanel.scrollTop = 0;
+                displaySuggestions(currentSearchQuery, e.target.value);
+            });
+
+            langToggleBtn.addEventListener('click', () => {
+                console.log("Language toggle initiated (FR/AR). This would switch the application's text.");
+                // NOTE: Using a custom modal is preferred over alert() for production, but using alert here for simplicity based on instructions.
+                alert("Alerte de basculement de langue ! Dans une vraie application, la langue passerait maintenant à l'Arabe.");
+            });
+
+            // Load initial mock suggestions on page load
+            displaySuggestions('');
+
+            // Add new function to toggle suggestions panel on mobile
+            const toggleSuggestions = (show = true) => {
+                if (window.innerWidth < 1024) { // Only for mobile
+                    const container = document.getElementById('suggestions-panel-container');
+                    if (show) {
+                        container.classList.add('show');
+                        // Add swipe down to close functionality
+                        let startY;
+                        container.addEventListener('touchstart', e => {
+                            startY = e.touches[0].clientY;
+                        });
+                        container.addEventListener('touchmove', e => {
+                            const deltaY = e.touches[0].clientY - startY;
+                            if (deltaY > 100) { // If swiped down more than 100px
+                                container.classList.remove('show');
+                            }
+                        });
+                    } else {
+                        container.classList.remove('show');
+                    }
+                }
+            };
+
+            // Add event listener for window resize
+            window.addEventListener('resize', () => {
+                if (window.innerWidth >= 1024) {
+                    const container = document.getElementById('suggestions-panel-container');
+                    container.classList.remove('show');
+                }
+            });
+
+            // Initialize
+            toggleSuggestions(false);
+
+            // Make showProductDetails and addToCart globally accessible and add showProductDetailsByIndex
+            window.showProductDetails = showProductDetails;
+            window.addToCart = addToCart;
+            window.showProductDetailsByIndex = function (idx) {
+                showProductDetails(mockProducts[idx]);
+            };
+
+            // Make handleFeedback globally accessible
+            window.handleFeedback = handleFeedback;
+        });
+    </script>
+</body>
+
+</html>
