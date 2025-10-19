@@ -14,6 +14,10 @@ export default function SearchModal({ open, onCloseAction }: SearchModalProps) {
     const [query, setQuery] = useState("");
     const [sort, setSort] = useState("relevance");
 
+    // control mount/enter animation states
+    const [mounted, setMounted] = useState<boolean>(open);
+    const [entered, setEntered] = useState<boolean>(false);
+
     useEffect(() => {
         if (!open) {
             setQuery("");
@@ -89,11 +93,76 @@ export default function SearchModal({ open, onCloseAction }: SearchModalProps) {
         return () => el.removeEventListener('scroll', onScroll);
     }, [results.length, visibleCount, loading]);
 
-    if (!open) return null;
+    // handle mount/enter animation when `open` changes
+    useEffect(() => {
+        if (open) {
+            setMounted(true);
+            // next tick to allow mount before animating
+            requestAnimationFrame(() => setEntered(true));
+        } else {
+            // start exit animation
+            setEntered(false);
+            // unmount after transition (300ms)
+            const t = setTimeout(() => setMounted(false), 300);
+            return () => clearTimeout(t);
+        }
+    }, [open]);
+
+    // prevent background scroll when modal mounted
+    useEffect(() => {
+        if (!mounted) return;
+        const prev = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => { document.body.style.overflow = prev; };
+    }, [mounted]);
+
+    // Escape to close and basic focus-trap
+    useEffect(() => {
+        if (!mounted) return;
+
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                onCloseAction && onCloseAction();
+            }
+
+            if (e.key === 'Tab') {
+                // basic focus trap - keep focus inside modal
+                const focusable = Array.from(document.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')) as HTMLElement[];
+                const modalFocusable = focusable.filter(el => document.body.contains(el) && el.closest && el.closest('[data-search-modal]'));
+                if (modalFocusable.length === 0) return;
+                const idx = modalFocusable.indexOf(document.activeElement as HTMLElement);
+                if (e.shiftKey) {
+                    if (idx <= 0) {
+                        modalFocusable[modalFocusable.length - 1].focus();
+                        e.preventDefault();
+                    }
+                } else {
+                    if (idx === modalFocusable.length - 1) {
+                        modalFocusable[0].focus();
+                        e.preventDefault();
+                    }
+                }
+            }
+        };
+
+        document.addEventListener('keydown', onKey);
+        // focus first input inside modal
+        requestAnimationFrame(() => {
+            const first = document.querySelector('[data-search-modal] input, [data-search-modal] button') as HTMLElement | null;
+            first?.focus();
+        });
+
+        return () => document.removeEventListener('keydown', onKey);
+    }, [mounted, onCloseAction]);
+
+    if (!mounted) return null;
 
     return (
-        <div className="fixed inset-0 z-60 bg-white p-4 overflow-auto">
-            <div className="max-w-6xl mx-auto">
+        <div className={`fixed inset-0 p-4 overflow-auto transition-opacity duration-300 ${entered ? 'opacity-100' : 'opacity-0'}`} style={{ zIndex: 99990 }}>
+            {/* backdrop — gradient soft gray */}
+            <div style={{ position: 'fixed', inset: 0, background: 'linear-gradient(180deg, #f3f4f6, #ffffff)', zIndex: 99991, pointerEvents: 'auto' }} />
+            <div data-search-modal className={`relative max-w-6xl mx-auto transition-transform duration-300 ${entered ? 'translate-y-0' : '-translate-y-4'}`} style={{ zIndex: 99992, position: 'relative' }}>
                 {/* Top bar with logo preserved */}
                 <div className="flex items-center justify-between mb-3 px-2">
                     <div className="flex items-center gap-3">
@@ -182,8 +251,8 @@ export default function SearchModal({ open, onCloseAction }: SearchModalProps) {
                 </div>
 
                 <div ref={containerRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {results.slice(0, visibleCount).map((p) => (
-                        <div key={p.name} className="border rounded-xl p-3 hover:shadow-lg flex flex-col">
+                    {results.slice(0, visibleCount).map((p, i) => (
+                        <div key={p.name} style={{ transitionDelay: `${i * 40}ms` }} className={`border rounded-xl p-3 hover:shadow-lg flex flex-col transform transition-all duration-300 ${entered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src={p.image} alt={p.name} className="h-36 w-full object-cover rounded-md mb-3" />
                             <div className="flex-grow">

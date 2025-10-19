@@ -186,7 +186,7 @@ export default function ChatInterface({
     };
 
     return (
-        <div className="lg:col-span-3 flex flex-col bg-white rounded-xl shadow-xl p-4 sm:p-6 mb-6 lg:mb-0 lg:mr-4 lg:border-r lg:border-gray-100 chat-container relative">
+    <div className="lg:col-span-3 flex flex-col bg-white rounded-xl shadow-xl p-4 sm:p-6 mb-6 lg:mb-0 lg:mr-4 lg:border-r lg:border-gray-100 chat-container relative h-full min-h-0">
             {/* Chat Header (Title + Clear Button) */}
             <div className="flex justify-between items-center mb-4 border-b pb-2">
                 <h2 className="text-2xl font-semibold text-gray-800">
@@ -208,9 +208,8 @@ export default function ChatInterface({
             {/* Chat History Area (scrollable, with input fixed at bottom) */}
             <div
                 ref={chatHistoryRef}
-                className="flex-grow overflow-y-auto space-y-4 pr-2 mb-2 chat-history"
+                className="flex-grow overflow-y-auto space-y-4 pr-2 mb-2 chat-history h-full min-h-0"
                 style={{
-                    maxHeight: 'calc(100vh - 200px)',
                     scrollbarWidth: 'thin',
                     scrollbarColor: 'rgba(0, 0, 0, 0.2) transparent'
                 }}
@@ -249,8 +248,10 @@ export default function ChatInterface({
                 onSubmit={handleSubmit}
                 className="flex space-x-3 items-center bg-white py-2 px-0 border-t border-gray-100 z-10"
                 style={{
-                    position: 'relative',
-                    alignSelf: 'stretch'
+                    position: 'sticky',
+                    bottom: 0,
+                    alignSelf: 'stretch',
+                    background: 'white'
                 }}
             >
                 <input

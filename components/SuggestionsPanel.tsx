@@ -107,7 +107,7 @@ export default function SuggestionsPanel({
     const visibleProducts = sortedProducts.slice(0, renderedCount);
 
     return (
-        <div className="lg:col-span-2 flex flex-col bg-white rounded-xl shadow-xl p-4 sm:p-6 relative">
+        <div className="lg:col-span-2 flex flex-col bg-white rounded-xl shadow-xl p-4 sm:p-6 relative h-full min-h-0">
             {/* Add drag handle for mobile */}
             <div className="suggestions-handle lg:hidden"></div>
             <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">
@@ -144,9 +144,8 @@ export default function SuggestionsPanel({
             {/* Suggestions Panel with Independent Scroll */}
             <div
                 ref={suggestionsPanelRef}
-                className="flex-grow overflow-y-auto space-y-4 suggestions-panel relative"
+                className="flex-grow overflow-y-auto space-y-4 suggestions-panel relative h-full min-h-0"
                 style={{
-                    maxHeight: 'calc(100vh - 300px)',
                     scrollbarWidth: 'thin',
                     scrollbarColor: 'rgba(0, 0, 0, 0.1) transparent'
                 }}
