@@ -119,7 +119,7 @@ export default function ChatInterface({
                                         className="bg-gray-100 px-2 py-1 rounded text-xs font-medium text-gray-700 hover:bg-primary hover:text-white transition-all duration-200 flex items-center space-x-1"
                                         title="Visiter le site web du vendeur"
                                     >
-                                        <span>Boutique</span>
+                                        <span>Visiter</span>
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                         </svg>
@@ -244,31 +244,35 @@ export default function ChatInterface({
                 )}
             </div>
 
-            {/* Chat Input Form - fixed at bottom on mobile */}
+            {/* Chat Input Form - fixed at bottom without expanding on messages */}
             <form
                 onSubmit={handleSubmit}
-                className="flex space-x-3 items-center bg-white py-2 px-0 border-t border-gray-100 sticky bottom-0 left-0 right-0 z-10"
-                style={{ position: 'sticky' }}
+                className="flex space-x-3 items-center bg-white py-2 px-0 border-t border-gray-100 z-10"
+                style={{
+                    position: 'relative',
+                    alignSelf: 'stretch'
+                }}
             >
                 <input
                     type="text"
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     placeholder="Rechercher des produits ou poser une question..."
-                    className="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary transition duration-150 shadow-inner text-gray-800"
+                    className="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary transition duration-150 text-gray-800"
                     required
                     disabled={isLoading}
                 />
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="bg-primary text-white p-3 rounded-lg font-medium hover:bg-emerald-700 transition duration-150 shadow-lg flex items-center justify-center disabled:opacity-50"
+                    className="bg-primary text-white p-3 rounded-lg font-medium hover:bg-emerald-700 transition duration-150 flex items-center justify-center disabled:opacity-50"
+                    style={{ minWidth: 56 }}
                 >
                     {/* Enhanced Send Icon */}
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1 -rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                         <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                     </svg>
-                    Envoyer
+                    <span className="hidden sm:inline">Envoyer</span>
                 </button>
             </form>
         </div>

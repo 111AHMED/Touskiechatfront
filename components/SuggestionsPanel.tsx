@@ -7,10 +7,10 @@ import { sortProducts } from '../utils/productUtils';
 interface SuggestionsPanelProps {
     products: Product[];
     currentSortKey: SortKey;
-    onSortChange: (sortKey: SortKey) => void;
-    onProductClick: (product: Product) => void;
-    onAddToCart: (productName: string) => void;
-    onFeedback: (productName: string, type: 'like' | 'dislike') => void;
+    onSortChangeAction: (sortKey: SortKey) => void;
+    onProductClickAction: (product: Product) => void;
+    onAddToCartAction: (productName: string) => void;
+    onFeedbackAction: (productName: string, type: 'like' | 'dislike') => void;
     likedProducts: Set<string>;
     dislikedProducts: Set<string>;
     favorites: Set<string>;
@@ -19,10 +19,10 @@ interface SuggestionsPanelProps {
 export default function SuggestionsPanel({
     products,
     currentSortKey,
-    onSortChange,
-    onProductClick,
-    onAddToCart,
-    onFeedback,
+    onSortChangeAction,
+    onProductClickAction,
+    onAddToCartAction,
+    onFeedbackAction,
     likedProducts,
     dislikedProducts,
     favorites
@@ -121,7 +121,7 @@ export default function SuggestionsPanel({
                 <select
                     id="sort-select"
                     value={currentSortKey}
-                    onChange={(e) => onSortChange(e.target.value as SortKey)}
+                    onChange={(e) => onSortChangeAction(e.target.value as SortKey)}
                     className="p-1.5 border border-gray-300 rounded-lg text-sm focus:ring-primary focus:border-primary transition"
                 >
                     <option value="relevance">Pertinence</option>
@@ -197,7 +197,7 @@ export default function SuggestionsPanel({
                                     {/* Details Button */}
                                     <div className="flex flex-col items-end flex-shrink-0 mt-[-5px]">
                                         <button
-                                            onClick={() => onProductClick(product)}
+                                            onClick={() => onProductClickAction(product)}
                                             className="text-gray-400 hover:text-primary transition text-sm flex items-center mt-1 p-1 rounded-md hover:bg-gray-50"
                                             title="Afficher les détails du vendeur"
                                         >
@@ -219,7 +219,7 @@ export default function SuggestionsPanel({
                                 {/* Action buttons */}
                                 <div className="flex justify-between items-center pt-3 border-t">
                                     <button
-                                        onClick={() => onAddToCart(product.name)}
+                                        onClick={() => onAddToCartAction(product.name)}
                                         className={`p-2 rounded-full transition shadow-sm ${favorites.has(product.name)
                                             ? 'text-red-500 bg-red-50'
                                             : 'bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-500'
@@ -236,7 +236,7 @@ export default function SuggestionsPanel({
                                         className="bg-gray-100 px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-primary hover:text-white transition-all duration-200 flex items-center space-x-1"
                                         title="Visiter le site web du vendeur"
                                     >
-                                        <span>Boutique</span>
+                                        <span>Visiter</span>
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                         </svg>
@@ -247,7 +247,7 @@ export default function SuggestionsPanel({
                                 <div className="flex justify-end items-center gap-3 mt-2">
                                     {/* Like button */}
                                     <button
-                                        onClick={() => onFeedback(product.name, 'like')}
+                                        onClick={() => onFeedbackAction(product.name, 'like')}
                                         title="J'aime cette suggestion"
                                         className={`flex items-center gap-1 p-2 rounded-lg hover:bg-green-100 group transition-all duration-200 ${likedProducts.has(product.name) ? 'text-green-600' : 'text-gray-400'
                                             }`}
@@ -263,7 +263,7 @@ export default function SuggestionsPanel({
 
                                     {/* Dislike button */}
                                     <button
-                                        onClick={() => onFeedback(product.name, 'dislike')}
+                                        onClick={() => onFeedbackAction(product.name, 'dislike')}
                                         title="Je n'aime pas cette suggestion"
                                         className={`flex items-center gap-1 p-2 rounded-lg hover:bg-red-100 group transition-all duration-200 ${dislikedProducts.has(product.name) ? 'text-red-600' : 'text-gray-400'
                                             }`}

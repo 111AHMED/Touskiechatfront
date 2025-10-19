@@ -19,12 +19,17 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
 
     return (
         <div
-            className="fixed inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 flex items-center justify-center z-50 p-4"
+            style={{ pointerEvents: 'none' }}
             onClick={onClose}
         >
+            {/* Light overlay but non-blocking so underlying UI remains usable */}
+            <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.12)', pointerEvents: 'none' }} />
+
             <div
                 className="bg-white rounded-2xl shadow-2xl w-full max-w-lg modal-content transform scale-100 transition-all duration-300"
                 onClick={(e) => e.stopPropagation()}
+                style={{ pointerEvents: 'auto' }}
             >
                 {/* Product Image - Responsive height */}
                 <div className="relative w-full h-48 sm:h-64 mb-6 rounded-xl overflow-hidden">
@@ -79,10 +84,10 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
                         onClick={handleAddToCart}
                         className="w-full bg-primary text-white p-4 rounded-xl font-medium hover:bg-emerald-700 transition duration-300 flex items-center justify-center group"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 transform group-hover:scale-110 transition" viewBox="0 0 20 20" fill="currentColor">
-                            <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.375 6.875c.06.301.299.54.6.6l1.375.253 1.375.254.6.6h5.815c.321 0 .618-.21.71-.512l2-7A1 1 0 0017 3H5.257l-.374-1.5H3zM16.5 10.5a.5.5 0 01-1 0 .5.5 0 011 0zm-7-2a.5.5 0 01-1 0 .5.5 0 011 0z" />
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 transform group-hover:scale-110 transition" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12.76 3.5a4.5 4.5 0 00-6.01 0l-.75.72-.75-.72a4.5 4.5 0 10-6.36 6.36L12 21.23l12.86-11.35a4.5 4.5 0 10-6.36-6.36l-.75.72-.75-.72z" />
                         </svg>
-                        Ajouter au Panier
+                        Ajouter aux favoris
                     </button>
                 </div>
             </div>

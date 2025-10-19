@@ -5,9 +5,12 @@ import Header from '../components/Header';
 import ChatInterface from '../components/ChatInterface';
 import SuggestionsPanel from '../components/SuggestionsPanel';
 import ProductModal from '../components/ProductModal';
+import ToastContainer, { pushToast } from '../components/Toast';
 import { ChatMessage, Product, SortKey, ChatState } from '../types';
 import { mockProducts } from '../data/mockProducts';
 import { filterProducts, generateBotResponse } from '../utils/productUtils';
+import { addGuestFavorite, removeGuestFavorite, getGuestFavorites } from '../utils/favorites';
+import { on } from '../utils/events';
 
 export default function Home() {
   const [chatState, setChatState] = useState<ChatState>({
@@ -31,6 +34,14 @@ export default function Home() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    const off = on('openProduct', (p: Product) => {
+      setSelectedProduct(p);
+      setIsModalOpen(true);
+    });
+    return off;
+  }, []);
 
   const handleSendMessage = async (message: string) => {
     // Add user message
@@ -92,10 +103,14 @@ export default function Home() {
     const newFavorites = new Set(chatState.favorites);
     if (newFavorites.has(productName)) {
       newFavorites.delete(productName);
-      alert(`"${productName}" retiré des favoris !`);
+      // remove from guest favorites storage as well
+      removeGuestFavorite(productName);
+      pushToast(`"${productName}" retiré des favoris`);
     } else {
       newFavorites.add(productName);
-      alert(`"${productName}" ajouté aux favoris !`);
+      // add to guest favorites storage
+      addGuestFavorite(productName);
+      pushToast(`"${productName}" ajouté aux favoris`);
     }
 
     setChatState(prev => ({
@@ -138,6 +153,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen antialiased">
+      <ToastContainer />
       <ProductModal
         product={selectedProduct}
         isOpen={isModalOpen}
@@ -164,10 +180,10 @@ export default function Home() {
           <SuggestionsPanel
             products={filteredProducts.length > 0 ? filteredProducts : mockProducts}
             currentSortKey={chatState.currentSortKey}
-            onSortChange={handleSortChange}
-            onProductClick={handleProductClick}
-            onAddToCart={handleAddToCart}
-            onFeedback={handleFeedback}
+            onSortChangeAction={handleSortChange}
+            onProductClickAction={handleProductClick}
+            onAddToCartAction={handleAddToCart}
+            onFeedbackAction={handleFeedback}
             likedProducts={chatState.likedProducts}
             dislikedProducts={chatState.dislikedProducts}
             favorites={chatState.favorites}

@@ -1,9 +1,13 @@
-'use client';
+"use client";
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import SearchModal from './SearchModal';
 
 export default function Header() {
     const [searchQuery, setSearchQuery] = useState('');
+    const router = useRouter();
+    const [showSearch, setShowSearch] = useState(false);
 
     const handleLanguageToggle = () => {
         console.log("Language toggle initiated (FR/AR). This would switch the application's text.");
@@ -12,6 +16,7 @@ export default function Header() {
 
     return (
         <header className="bg-white shadow-md sticky top-0 z-20">
+            <SearchModal open={showSearch} onCloseAction={() => setShowSearch(false)} />
             <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-4">
                 <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                     {/* Logo */}
@@ -66,14 +71,18 @@ export default function Header() {
 
                     {/* Global Site Search - Full width on mobile */}
                     <div className="w-full sm:max-w-xl">
-                        <input
-                            type="text"
-                            placeholder="Rechercher..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-accent focus:border-accent transition text-sm"
-                            aria-label="Recherche Globale"
-                        />
+                        <div onClick={() => setShowSearch(true)} className="w-full">
+                            <input
+                                type="text"
+                                placeholder="Rechercher..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onFocus={() => setShowSearch(true)}
+                                className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-accent focus:border-accent transition text-sm"
+                                aria-label="Recherche Globale"
+                                readOnly={true}
+                            />
+                        </div>
                     </div>
 
                     {/* Icons and Language - Horizontal scroll on very small screens */}
@@ -90,6 +99,7 @@ export default function Header() {
 
                         {/* Cart Icon */}
                         <button
+                            onClick={() => router.push('/favorites')}
                             className="text-gray-600 hover:text-accent transition duration-150 p-2 rounded-full hover:bg-gray-100"
                             title="Favoris"
                         >
