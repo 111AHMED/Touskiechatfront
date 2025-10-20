@@ -145,10 +145,6 @@ export default function SuggestionsPanel({
             <div
                 ref={suggestionsPanelRef}
                 className="flex-grow overflow-y-auto space-y-4 suggestions-panel relative h-full min-h-0"
-                style={{
-                    scrollbarWidth: 'thin',
-                    scrollbarColor: 'rgba(0, 0, 0, 0.1) transparent'
-                }}
             >
                 {visibleProducts.length === 0 && !loading ? (
                     <div className="text-center text-gray-500 py-10">
@@ -166,7 +162,7 @@ export default function SuggestionsPanel({
                         ) : '';
 
                         return (
-                            <div key={idx} className="relative flex flex-col bg-white border border-gray-200 rounded-xl p-3 hover:shadow-xl hover:scale-[1.01] transition duration-300 transform group">
+                            <div key={idx} className="relative flex flex-col bg-white border border-gray-200 rounded-xl p-3 hover:shadow-xl hover:scale-[1.01] transition duration-300 transform group message-animate">
                                 {/* Product Image, Name, Vendor, and Details Button */}
                                 <div className="flex items-start space-x-3 mb-3">
                                     {/* Product Image Container */}

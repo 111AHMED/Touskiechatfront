@@ -228,6 +228,50 @@ body {
   }
 }
 
+/* New: sticky input visual separation and animations */
+.sticky-input-shadow {
+  box-shadow: 0 -8px 18px -12px rgba(15, 23, 42, 0.2), 0 -1px 0 rgba(0, 0, 0, 0.04);
+}
+
+/* Message arrival animation: subtle fade + slide up */
+.message-animate {
+  animation: msg-in 320ms cubic-bezier(.2, .9, .3, 1);
+}
+
+@keyframes msg-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.995);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Responsive fixed height breakpoints for panels on small screens */
+@media (max-width: 640px) {
+  .chat-container {
+    height: calc(100vh - 120px);
+    /* leave room for header/footer */
+  }
+
+  .suggestions-panel {
+    max-height: 36vh;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1023px) {
+  .chat-container {
+    height: calc(100vh - 110px);
+  }
+
+  .suggestions-panel {
+    max-height: 44vh;
+  }
+}
+
 /* Brand / logo styles */
 .brand {
   display: inline-flex;
@@ -273,4 +317,32 @@ body {
   .brand-wordmark {
     font-size: 1.5rem;
   }
+}
+
+/* Smooth card entrance for SearchModal results */
+.card-enter {
+  animation: card-in 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes card-in {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.996);
+    filter: blur(6px);
+  }
+
+  60% {
+    opacity: 1;
+    transform: translateY(0) scale(1.002);
+    filter: blur(0px);
+  }
+
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Small spacer to ensure cards don't touch the sticky header */
+.modal-top-spacer {
+  height: 0.75rem;
 }

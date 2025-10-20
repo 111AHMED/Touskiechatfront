@@ -186,7 +186,7 @@ export default function ChatInterface({
     };
 
     return (
-    <div className="lg:col-span-3 flex flex-col bg-white rounded-xl shadow-xl p-4 sm:p-6 mb-6 lg:mb-0 lg:mr-4 lg:border-r lg:border-gray-100 chat-container relative h-full min-h-0">
+        <div className="lg:col-span-3 flex flex-col bg-white rounded-xl shadow-xl p-4 sm:p-6 mb-6 lg:mb-0 lg:mr-4 lg:border-r lg:border-gray-100 chat-container relative h-full min-h-0">
             {/* Chat Header (Title + Clear Button) */}
             <div className="flex justify-between items-center mb-4 border-b pb-2">
                 <h2 className="text-2xl font-semibold text-gray-800">
@@ -209,15 +209,11 @@ export default function ChatInterface({
             <div
                 ref={chatHistoryRef}
                 className="flex-grow overflow-y-auto space-y-4 pr-2 mb-2 chat-history h-full min-h-0"
-                style={{
-                    scrollbarWidth: 'thin',
-                    scrollbarColor: 'rgba(0, 0, 0, 0.2) transparent'
-                }}
             >
                 {messages.map((message) => (
                     <div key={message.id} className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}>
                         <div className={`max-w-lg ${message.isUser ? 'bg-user-bubble text-white' : 'bg-gray-100 text-gray-700'}
-              p-3 rounded-xl ${message.isUser ? 'rounded-br-none' : 'rounded-tl-none'} shadow-sm`}>
+              p-3 rounded-xl ${message.isUser ? 'rounded-br-none' : 'rounded-tl-none'} shadow-sm message-animate`}>
                             {!message.isUser && (
                                 <p className="font-semibold text-primary/90">TOUSKIE Assistant</p>
                             )}
@@ -246,12 +242,11 @@ export default function ChatInterface({
             {/* Chat Input Form - fixed at bottom without expanding on messages */}
             <form
                 onSubmit={handleSubmit}
-                className="flex space-x-3 items-center bg-white py-2 px-0 border-t border-gray-100 z-10"
+                className="flex space-x-3 items-center bg-white py-2 px-0 border-t border-gray-100 z-10 sticky-input-shadow"
                 style={{
                     position: 'sticky',
                     bottom: 0,
-                    alignSelf: 'stretch',
-                    background: 'white'
+                    alignSelf: 'stretch'
                 }}
             >
                 <input
