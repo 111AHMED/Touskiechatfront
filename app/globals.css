@@ -346,3 +346,54 @@ body {
 .modal-top-spacer {
   height: 0.75rem;
 }
+
+/* Image hover zoom (only image) */
+.img-zoom {
+  overflow: hidden;
+  display: block;
+}
+
+.img-zoom img {
+  transition: transform 320ms cubic-bezier(0.2, 0.9, 0.3, 1), filter 320ms ease;
+  will-change: transform;
+}
+
+.img-zoom:hover img {
+  transform: scale(1.06);
+}
+
+/* Price pill using brand color */
+.price-pill-brand {
+  background-color: var(--color-primary);
+  color: white;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  box-shadow: 0 6px 18px -12px rgba(5, 150, 105, 0.45);
+}
+
+/* Responsive card image heights */
+.card-image-lg {
+  height: 12rem;
+  /* 192px */
+}
+
+@media (max-width: 640px) {
+  .card-image-lg {
+    height: 10rem;
+    /* 160px */
+  }
+}
+
+/* Desktop-only hover effect for cards (scale + lift + shadow) */
+@media (hover: hover) and (pointer: fine) {
+  .card-hover {
+    transition: transform 260ms cubic-bezier(.2, .9, .3, 1), box-shadow 260ms ease;
+    will-change: transform;
+  }
+
+  .card-hover:hover {
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: 0 16px 40px rgba(2, 6, 23, 0.12), 0 4px 12px rgba(2, 6, 23, 0.06);
+  }
+}

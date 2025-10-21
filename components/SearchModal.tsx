@@ -257,17 +257,21 @@ export default function SearchModal({ open, onCloseAction }: SearchModalProps) {
                 <div ref={containerRef} className="overflow-auto px-3 pb-4 flex-grow">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {results.slice(0, visibleCount).map((p, i) => (
-                            <div key={p.name} style={{ transitionDelay: `${i * 40}ms` }} className={`border rounded-xl p-3 hover:shadow-lg flex flex-col transform transition-all duration-300 card-enter ${entered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={p.image} alt={p.name} className="h-36 w-full object-cover rounded-md mb-3" />
-                                <div className="flex-grow">
-                                    <h3 className="font-semibold text-sm">{p.name}</h3>
-                                    <p className="text-xs text-gray-500">{p.vendor}</p>
-                                    <p className="mt-2 font-extrabold text-accent">{p.price}</p>
+                            <div key={p.name} style={{ transitionDelay: `${i * 40}ms` }} className={`border rounded-xl overflow-hidden flex flex-col transform transition-all duration-300 card-enter card-hover ${entered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
+                                {/* Large image top with price overlay */}
+                                <div className="relative w-full card-image-lg bg-gray-50 img-zoom">
+                                    <img loading="lazy" src={p.image} alt={p.name} className="w-full h-full object-cover" onError={(e) => { const t = e.target as HTMLImageElement; t.onerror = null; t.src = 'https://placehold.co/320x200/9CA3AF/ffffff?text=Img'; }} />
+                                    <div className="absolute right-3 bottom-3 price-pill-brand text-sm">{p.price}</div>
                                 </div>
-                                <div className="mt-3 flex items-center justify-between">
-                                    <button onClick={() => emit('openProduct', p)} className="text-sm text-primary">Voir détails</button>
-                                    <a href={p.link} target="_blank" rel="noreferrer" className="text-sm text-gray-600 flex items-center gap-1">Visiter <span className="ml-1">→</span></a>
+
+                                <div className="p-3 flex flex-col flex-grow">
+                                    <h3 className="font-semibold text-sm truncate">{p.name}</h3>
+                                    <p className="text-xs text-gray-500 truncate">{p.vendor}</p>
+
+                                    <div className="mt-3 flex items-center justify-between">
+                                        <button onClick={() => emit('openProduct', p)} className="text-sm text-primary">Voir détails</button>
+                                        <a href={p.link} target="_blank" rel="noreferrer" className="text-sm text-gray-600 flex items-center gap-1">Visiter <span className="ml-1">→</span></a>
+                                    </div>
                                 </div>
                             </div>
                         ))}

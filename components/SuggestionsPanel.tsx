@@ -162,115 +162,106 @@ export default function SuggestionsPanel({
                         ) : '';
 
                         return (
-                            <div key={idx} className="relative flex flex-col bg-white border border-gray-200 rounded-xl p-3 hover:shadow-xl hover:scale-[1.01] transition duration-300 transform group message-animate">
-                                {/* Product Image, Name, Vendor, and Details Button */}
-                                <div className="flex items-start space-x-3 mb-3">
-                                    {/* Product Image Container */}
-                                    <div className="relative w-16 h-16 flex-shrink-0">
-                                        <img
-                                            src={product.image}
-                                            loading="lazy"
-                                            onError={(e) => {
-                                                const target = e.target as HTMLImageElement;
-                                                target.onerror = null;
-                                                target.src = 'https://placehold.co/64x64/9CA3AF/ffffff?text=Img';
-                                            }}
-                                            alt={product.name}
-                                            className="w-full h-full object-cover rounded-lg border border-gray-100 shadow-md"
-                                        />
-                                        {newBadgeHTML}
-                                    </div>
+                            <div key={idx} className="relative flex flex-col bg-white border border-gray-200 rounded-xl overflow-hidden transition duration-300 transform group message-animate card-hover">
+                                {/* Large image top */}
+                                <div className="relative w-full card-image-lg bg-gray-50 img-zoom">
+                                    <img
+                                        loading="lazy"
+                                        src={product.image}
+                                        onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            target.onerror = null;
+                                            target.src = 'https://placehold.co/320x200/9CA3AF/ffffff?text=Img';
+                                        }}
+                                        alt={product.name}
+                                        className="w-full h-full object-cover"
+                                    />
+                                    {newBadgeHTML}
+                                    <div className="absolute right-3 bottom-3 price-pill-brand text-sm">{product.price}</div>
+                                </div>
 
-                                    <div className="flex-grow">
-                                        {/* Name and Vendor */}
-                                        <div className="flex items-center space-x-2">
+                                {/* Content */}
+                                <div className="p-3 flex flex-col flex-grow">
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex-1 pr-2">
                                             <p className="font-bold text-md text-gray-800 group-hover:text-primary transition">{product.name}</p>
+                                            <p className="text-sm text-gray-500">{product.vendor}</p>
                                         </div>
-                                        <p className="text-sm text-gray-500">{product.vendor}</p>
+
+                                        <div className="flex-shrink-0 ml-2">
+                                            <button
+                                                onClick={() => onProductClickAction(product)}
+                                                className="text-gray-400 hover:text-primary transition text-sm p-1 rounded-md hover:bg-gray-50"
+                                                title="Afficher les détails du vendeur"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                            </button>
+                                        </div>
                                     </div>
 
-                                    {/* Details Button */}
-                                    <div className="flex flex-col items-end flex-shrink-0 mt-[-5px]">
+                                    <div className="mt-3 flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => onAddToCartAction(product.name)}
+                                                className={`p-2 rounded-full transition shadow-sm ${favorites.has(product.name)
+                                                    ? 'text-red-500 bg-red-50'
+                                                    : 'bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-500'
+                                                    }`}
+                                                title="Ajouter aux favoris"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill={favorites.has(product.name) ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                                </svg>
+                                            </button>
+                                            <button
+                                                onClick={() => window.open(product.link, '_blank')}
+                                                className="bg-gray-100 px-3 py-1 rounded-lg text-sm font-medium text-gray-700 hover:bg-primary hover:text-white transition-all duration-200 flex items-center space-x-1"
+                                                title="Visiter le site web du vendeur"
+                                            >
+                                                <span>Visiter</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                                </svg>
+                                            </button>
+                                        </div>
+
+                                        <div className="text-sm text-gray-500">{/* price moved to image overlay */}</div>
+                                    </div>
+
+                                    {/* Feedback buttons */}
+                                    <div className="flex justify-end items-center gap-3 mt-3">
                                         <button
-                                            onClick={() => onProductClickAction(product)}
-                                            className="text-gray-400 hover:text-primary transition text-sm flex items-center mt-1 p-1 rounded-md hover:bg-gray-50"
-                                            title="Afficher les détails du vendeur"
+                                            onClick={() => onFeedbackAction(product.name, 'like')}
+                                            title="J'aime cette suggestion"
+                                            className={`flex items-center gap-1 p-2 rounded-lg hover:bg-green-100 group transition-all duration-200 ${likedProducts.has(product.name) ? 'text-green-600' : 'text-gray-400'
+                                                }`}
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            <svg className="w-5 h-5 transition-colors" viewBox="0 0 24 24" fill="none">
+                                                <path d="M7 22V11M2 13V20C2 21.1046 2.89543 22 4 22H17.4262C18.907 22 20.1662 20.9197 20.3814 19.4562L21.4844 11.4562C21.7508 9.6389 20.3273 8 18.5292 8H15C14.4477 8 14 7.55228 14 7V4C14 2.34315 12.6569 1 11 1V1C9.34315 1 8 2.34315 8 4V4.5C8 5.88071 7.11929 7 5.73858 7V7C3.68871 7 2 8.68871 2 10.7386V13"
+                                                    stroke="currentColor"
+                                                    strokeWidth="2"
+                                                    strokeLinecap="round"
+                                                    className="group-hover:stroke-green-600" />
                                             </svg>
-                                            Détails
+                                        </button>
+
+                                        <button
+                                            onClick={() => onFeedbackAction(product.name, 'dislike')}
+                                            title="Je n'aime pas cette suggestion"
+                                            className={`flex items-center gap-1 p-2 rounded-lg hover:bg-red-100 group transition-all duration-200 ${dislikedProducts.has(product.name) ? 'text-red-600' : 'text-gray-400'
+                                                }`}
+                                        >
+                                            <svg className="w-5 h-5 transition-colors" viewBox="0 0 24 24" fill="none">
+                                                <path d="M17 2V13M22 11V4C22 2.89543 21.1046 2 20 2H6.57384C5.09296 2 3.83384 3.08034 3.61857 4.54376L2.51557 12.5438C2.24916 14.3611 3.67266 16 5.47082 16H9C9.55228 16 10 16.4477 10 17V20C10 21.6569 11.3431 23 13 23V23C14.6569 23 16 21.6569 16 20V19.5C16 18.1193 16.8807 17 18.2614 17V17C20.3113 17 22 15.3113 22 13.2614V11"
+                                                    stroke="currentColor"
+                                                    strokeWidth="2"
+                                                    strokeLinecap="round"
+                                                    className="group-hover:stroke-red-600" />
+                                            </svg>
                                         </button>
                                     </div>
-                                </div>
-
-                                {/* Price */}
-                                <div className="flex justify-end items-center mb-3 pt-2 border-t border-dashed border-gray-100">
-                                    <div className="flex items-center space-x-2">
-                                        <p className="font-extrabold text-2xl text-accent">{product.price}</p>
-                                    </div>
-                                </div>
-
-                                {/* Action buttons */}
-                                <div className="flex justify-between items-center pt-3 border-t">
-                                    <button
-                                        onClick={() => onAddToCartAction(product.name)}
-                                        className={`p-2 rounded-full transition shadow-sm ${favorites.has(product.name)
-                                            ? 'text-red-500 bg-red-50'
-                                            : 'bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-500'
-                                            }`}
-                                        title="Ajouter aux favoris"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill={favorites.has(product.name) ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                        </svg>
-                                    </button>
-
-                                    <button
-                                        onClick={() => window.open(product.link, '_blank')}
-                                        className="bg-gray-100 px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-primary hover:text-white transition-all duration-200 flex items-center space-x-1"
-                                        title="Visiter le site web du vendeur"
-                                    >
-                                        <span>Visiter</span>
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                        </svg>
-                                    </button>
-                                </div>
-
-                                {/* Feedback buttons */}
-                                <div className="flex justify-end items-center gap-3 mt-2">
-                                    {/* Like button */}
-                                    <button
-                                        onClick={() => onFeedbackAction(product.name, 'like')}
-                                        title="J'aime cette suggestion"
-                                        className={`flex items-center gap-1 p-2 rounded-lg hover:bg-green-100 group transition-all duration-200 ${likedProducts.has(product.name) ? 'text-green-600' : 'text-gray-400'
-                                            }`}
-                                    >
-                                        <svg className="w-5 h-5 transition-colors" viewBox="0 0 24 24" fill="none">
-                                            <path d="M7 22V11M2 13V20C2 21.1046 2.89543 22 4 22H17.4262C18.907 22 20.1662 20.9197 20.3814 19.4562L21.4844 11.4562C21.7508 9.6389 20.3273 8 18.5292 8H15C14.4477 8 14 7.55228 14 7V4C14 2.34315 12.6569 1 11 1V1C9.34315 1 8 2.34315 8 4V4.5C8 5.88071 7.11929 7 5.73858 7V7C3.68871 7 2 8.68871 2 10.7386V13"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
-                                                strokeLinecap="round"
-                                                className="group-hover:stroke-green-600" />
-                                        </svg>
-                                    </button>
-
-                                    {/* Dislike button */}
-                                    <button
-                                        onClick={() => onFeedbackAction(product.name, 'dislike')}
-                                        title="Je n'aime pas cette suggestion"
-                                        className={`flex items-center gap-1 p-2 rounded-lg hover:bg-red-100 group transition-all duration-200 ${dislikedProducts.has(product.name) ? 'text-red-600' : 'text-gray-400'
-                                            }`}
-                                    >
-                                        <svg className="w-5 h-5 transition-colors" viewBox="0 0 24 24" fill="none">
-                                            <path d="M17 2V13M22 11V4C22 2.89543 21.1046 2 20 2H6.57384C5.09296 2 3.83384 3.08034 3.61857 4.54376L2.51557 12.5438C2.24916 14.3611 3.67266 16 5.47082 16H9C9.55228 16 10 16.4477 10 17V20C10 21.6569 11.3431 23 13 23V23C14.6569 23 16 21.6569 16 20V19.5C16 18.1193 16.8807 17 18.2614 17V17C20.3113 17 22 15.3113 22 13.2614V11"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
-                                                strokeLinecap="round"
-                                                className="group-hover:stroke-red-600" />
-                                        </svg>
-                                    </button>
                                 </div>
                             </div>
                         );
