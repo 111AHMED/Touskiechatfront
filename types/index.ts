@@ -3,11 +3,19 @@ export interface Product {
     price: string;
     numericPrice: number;
     vendor: string;
+    // Primary image (kept for backward compatibility)
     image: string;
+    // Additional images for carousel
+    images?: string[];
     link: string;
     isNew: boolean;
     address: string;
     phone: string;
+    // Optional longer description and rating (0-5)
+    description?: string;
+    rating?: number;
+    // Optional key/value specs (e.g., material, dimensions)
+    specs?: { [key: string]: string };
 }
 
 export interface ChatMessage {

@@ -11,9 +11,9 @@ interface SuggestionsPanelProps {
     onProductClickAction: (product: Product) => void;
     onAddToCartAction: (productName: string) => void;
     onFeedbackAction: (productName: string, type: 'like' | 'dislike') => void;
-    likedProducts: Set<string>;
-    dislikedProducts: Set<string>;
-    favorites: Set<string>;
+    likedProducts: string[];
+    dislikedProducts: string[];
+    favorites: string[];
 }
 
 export default function SuggestionsPanel({
@@ -205,13 +205,13 @@ export default function SuggestionsPanel({
                                         <div className="flex items-center gap-2">
                                             <button
                                                 onClick={() => onAddToCartAction(product.name)}
-                                                className={`p-2 rounded-full transition shadow-sm ${favorites.has(product.name)
+                                                className={`p-2 rounded-full transition shadow-sm ${favorites.includes(product.name)
                                                     ? 'text-red-500 bg-red-50'
                                                     : 'bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-500'
                                                     }`}
                                                 title="Ajouter aux favoris"
                                             >
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill={favorites.has(product.name) ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill={favorites.includes(product.name) ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                                                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                                                 </svg>
                                             </button>
@@ -235,7 +235,7 @@ export default function SuggestionsPanel({
                                         <button
                                             onClick={() => onFeedbackAction(product.name, 'like')}
                                             title="J'aime cette suggestion"
-                                            className={`flex items-center gap-1 p-2 rounded-lg hover:bg-green-100 group transition-all duration-200 ${likedProducts.has(product.name) ? 'text-green-600' : 'text-gray-400'
+                                            className={`flex items-center gap-1 p-2 rounded-lg hover:bg-green-100 group transition-all duration-200 ${likedProducts.includes(product.name) ? 'text-green-600' : 'text-gray-400'
                                                 }`}
                                         >
                                             <svg className="w-5 h-5 transition-colors" viewBox="0 0 24 24" fill="none">
@@ -250,7 +250,7 @@ export default function SuggestionsPanel({
                                         <button
                                             onClick={() => onFeedbackAction(product.name, 'dislike')}
                                             title="Je n'aime pas cette suggestion"
-                                            className={`flex items-center gap-1 p-2 rounded-lg hover:bg-red-100 group transition-all duration-200 ${dislikedProducts.has(product.name) ? 'text-red-600' : 'text-gray-400'
+                                            className={`flex items-center gap-1 p-2 rounded-lg hover:bg-red-100 group transition-all duration-200 ${dislikedProducts.includes(product.name) ? 'text-red-600' : 'text-gray-400'
                                                 }`}
                                         >
                                             <svg className="w-5 h-5 transition-colors" viewBox="0 0 24 24" fill="none">

@@ -4,24 +4,24 @@ import { useState, useRef, useEffect } from 'react';
 import { ChatMessage, Product } from '../types';
 
 interface ChatInterfaceProps {
-    onSendMessage: (message: string) => void;
+    onSendMessageAction: (message: string) => void;
     messages: ChatMessage[];
     isLoading: boolean;
-    onProductClick: (product: Product) => void;
-    onAddToCart: (productName: string) => void;
-    onFeedback: (productName: string, type: 'like' | 'dislike') => void;
-    favorites: Set<string>;
-    likedProducts: Set<string>;
-    dislikedProducts: Set<string>;
+    onProductClickAction: (product: Product) => void;
+    onAddToCartAction: (productName: string) => void;
+    onFeedbackAction: (productName: string, type: 'like' | 'dislike') => void;
+    favorites: string[];
+    likedProducts: string[];
+    dislikedProducts: string[];
 }
 
 export default function ChatInterface({
-    onSendMessage,
+    onSendMessageAction,
     messages,
     isLoading,
-    onProductClick,
-    onAddToCart,
-    onFeedback,
+    onProductClickAction,
+    onAddToCartAction,
+    onFeedbackAction,
     favorites,
     likedProducts,
     dislikedProducts
@@ -44,7 +44,7 @@ export default function ChatInterface({
         const trimmedValue = inputValue.trim();
         if (!trimmedValue) return;
 
-        onSendMessage(trimmedValue);
+        onSendMessageAction(trimmedValue);
         setInputValue('');
     };
 
@@ -55,11 +55,82 @@ export default function ChatInterface({
 
     // Component for product suggestion cards in chat
     const ProductSuggestionCards = ({ products }: { products: Product[] }) => {
+        const scrollRef = useRef<HTMLDivElement | null>(null);
+        const [canScrollLeft, setCanScrollLeft] = useState(false);
+        const [canScrollRight, setCanScrollRight] = useState(false);
+
+        useEffect(() => {
+            const el = scrollRef.current;
+            if (!el) return;
+            const update = () => {
+                setCanScrollLeft(el.scrollLeft > 5);
+                setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 5);
+            };
+            update();
+            el.addEventListener('scroll', update, { passive: true });
+            window.addEventListener('resize', update);
+            return () => {
+                el.removeEventListener('scroll', update);
+                window.removeEventListener('resize', update);
+            };
+        }, [products]);
+
         if (!products || products.length === 0) return null;
 
+        const scrollBy = (distance: number) => {
+            const el = scrollRef.current;
+            if (!el) return;
+            el.scrollTo({ left: el.scrollLeft + distance, behavior: 'smooth' });
+        };
+
+        const cardWidth = 256; // approx width of each card (w-64)
+        const handleLeft = () => scrollBy(-cardWidth * 1.25);
+        const handleRight = () => scrollBy(cardWidth * 1.25);
+
+        const onKeyDown = (e: React.KeyboardEvent) => {
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                handleLeft();
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                handleRight();
+            }
+        };
+
         return (
-            <div className="mt-3">
-                <div className="flex overflow-x-auto space-x-3 pb-2 suggestions-scroll">
+            <div className="mt-3 relative">
+                {/* Left arrow */}
+                <button
+                    aria-hidden={!canScrollLeft}
+                    aria-label="Précédent"
+                    onClick={handleLeft}
+                    className={`hidden md:flex items-center justify-center absolute left-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white shadow-sm border border-gray-200 hover:bg-gray-50 transition ${canScrollLeft ? 'opacity-100' : 'opacity-40 pointer-events-none'}`}
+                    title="Précédent"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+
+                {/* Right arrow */}
+                <button
+                    aria-hidden={!canScrollRight}
+                    aria-label="Suivant"
+                    onClick={handleRight}
+                    className={`hidden md:flex items-center justify-center absolute right-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white shadow-sm border border-gray-200 hover:bg-gray-50 transition ${canScrollRight ? 'opacity-100' : 'opacity-40 pointer-events-none'}`}
+                    title="Suivant"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+
+                <div
+                    ref={scrollRef}
+                    tabIndex={0}
+                    onKeyDown={onKeyDown}
+                    className="flex overflow-x-auto space-x-3 pb-2 suggestions-scroll focus:outline-none"
+                >
                     {products.slice(0, 4).map((product, idx) => {
                         const newBadgeHTML = product.isNew ? (
                             <span className="absolute top-1 left-1 text-xxs font-semibold text-white bg-red-500 px-1.5 py-0.5 rounded-md shadow-lg z-10">
@@ -95,21 +166,18 @@ export default function ChatInterface({
                                 {/* Action buttons */}
                                 <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
                                     <button
-                                        onClick={() => onProductClick(product)}
+                                        onClick={() => onProductClickAction(product)}
                                         className="text-xs font-medium text-primary hover:underline"
                                     >
                                         Voir détails
                                     </button>
 
                                     <button
-                                        onClick={() => onAddToCart(product.name)}
-                                        className={`p-1.5 rounded-full transition shadow-sm ${favorites.has(product.name)
-                                            ? 'text-red-500 bg-red-50'
-                                            : 'bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-500'
-                                            }`}
+                                        onClick={() => onAddToCartAction(product.name)}
+                                        className={`p-1.5 rounded-full transition shadow-sm ${favorites.includes(product.name) ? 'text-red-500 bg-red-50' : 'bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-500'}`}
                                         title="Ajouter aux favoris"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill={favorites.has(product.name) ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill={favorites.includes(product.name) ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                                         </svg>
                                     </button>
@@ -130,9 +198,9 @@ export default function ChatInterface({
                                 <div className="flex justify-end items-center gap-2 mt-1">
                                     {/* Like button */}
                                     <button
-                                        onClick={() => onFeedback(product.name, 'like')}
+                                        onClick={() => onFeedbackAction(product.name, 'like')}
                                         title="J'aime cette suggestion"
-                                        className={`p-1 rounded hover:bg-green-100 transition-all duration-200 ${likedProducts.has(product.name) ? 'text-green-600' : 'text-gray-400'
+                                        className={`p-1 rounded hover:bg-green-100 transition-all duration-200 ${likedProducts.includes(product.name) ? 'text-green-600' : 'text-gray-400'
                                             }`}
                                     >
                                         <svg className="w-3 h-3 transition-colors" viewBox="0 0 24 24" fill="none">
@@ -146,9 +214,9 @@ export default function ChatInterface({
 
                                     {/* Dislike button */}
                                     <button
-                                        onClick={() => onFeedback(product.name, 'dislike')}
+                                        onClick={() => onFeedbackAction(product.name, 'dislike')}
                                         title="Je n'aime pas cette suggestion"
-                                        className={`p-1 rounded hover:bg-red-100 transition-all duration-200 ${dislikedProducts.has(product.name) ? 'text-red-600' : 'text-gray-400'
+                                        className={`p-1 rounded hover:bg-red-100 transition-all duration-200 ${dislikedProducts.includes(product.name) ? 'text-red-600' : 'text-gray-400'
                                             }`}
                                     >
                                         <svg className="w-3 h-3 transition-colors" viewBox="0 0 24 24" fill="none">

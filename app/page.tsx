@@ -33,14 +33,17 @@ export default function Home() {
 
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>(mockProducts);
 
   useEffect(() => {
-    const off = on('openProduct', (p: Product) => {
-      setSelectedProduct(p);
-      setIsModalOpen(true);
-    });
-    return off;
+    // Only run event subscription on the client
+    if (typeof window !== 'undefined') {
+      const off = on('openProduct', (p: Product) => {
+        setSelectedProduct(p);
+        setIsModalOpen(true);
+      });
+      return off;
+    }
   }, []);
 
   const handleSendMessage = async (message: string) => {
@@ -154,27 +157,30 @@ export default function Home() {
   return (
     <div className="min-h-screen antialiased">
       <ToastContainer />
-      <ProductModal
-        product={selectedProduct}
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        onAddToCart={handleAddToCart}
-      />
+
+      {isModalOpen && (
+        <ProductModal
+          product={selectedProduct}
+          isOpen={isModalOpen}
+          onCloseAction={handleCloseModal}
+          onAddToCartAction={handleAddToCart}
+        />
+      )}
 
       <Header />
 
       <main className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 mt-6 pb-12">
         <div className="lg:grid lg:grid-cols-5 lg:gap-8 min-h-[500px] lg:h-[75vh]">
           <ChatInterface
-            onSendMessage={handleSendMessage}
+            onSendMessageAction={handleSendMessage}
             messages={chatState.messages}
             isLoading={chatState.isLoading}
-            onProductClick={handleProductClick}
-            onAddToCart={handleAddToCart}
-            onFeedback={handleFeedback}
-            favorites={chatState.favorites}
-            likedProducts={chatState.likedProducts}
-            dislikedProducts={chatState.dislikedProducts}
+            onProductClickAction={handleProductClick}
+            onAddToCartAction={handleAddToCart}
+            onFeedbackAction={handleFeedback}
+            favorites={Array.from(chatState.favorites)}
+            likedProducts={Array.from(chatState.likedProducts)}
+            dislikedProducts={Array.from(chatState.dislikedProducts)}
           />
 
           <SuggestionsPanel
@@ -184,9 +190,9 @@ export default function Home() {
             onProductClickAction={handleProductClick}
             onAddToCartAction={handleAddToCart}
             onFeedbackAction={handleFeedback}
-            likedProducts={chatState.likedProducts}
-            dislikedProducts={chatState.dislikedProducts}
-            favorites={chatState.favorites}
+            likedProducts={Array.from(chatState.likedProducts)}
+            dislikedProducts={Array.from(chatState.dislikedProducts)}
+            favorites={Array.from(chatState.favorites)}
           />
         </div>
       </main>
