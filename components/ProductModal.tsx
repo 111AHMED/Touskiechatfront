@@ -333,7 +333,12 @@ export default function ProductModal({ product, isOpen, onCloseAction, onAddToCa
             </div>
 
             {zoomOpen && (
-                <ZoomOverlay images={images} index={index} setIndex={setIndex} onClose={() => setZoomOpen(false)} />
+                <ZoomOverlay
+                    images={images}
+                    index={index}
+                    setIndex={setIndex}
+                    onClose={() => setZoomOpen(false)}
+                />
             )}
         </div>
     );
@@ -352,14 +357,28 @@ function ZoomOverlay({ images, index, setIndex, onClose }: { images: string[]; i
         return () => window.removeEventListener('keydown', onKey);
     }, [images.length, index, onClose, setIndex]);
 
+    // Prevent closing modal when clicking outside image in zoom overlay
+    const handleOverlayClick = (e: React.MouseEvent) => {
+        // Only close zoom if user clicks directly on the overlay background
+        if (e.target === e.currentTarget) {
+            e.stopPropagation();
+            onClose();
+        }
+    };
+
     return (
-        <div className="fixed inset-0 z-[999] bg-black flex items-center justify-center" onClick={onClose}>
-            <button className="absolute top-4 right-4 text-white p-2 rounded bg-black/50" onClick={onClose} aria-label="Fermer" title="Fermer">
+        <div className="fixed inset-0 z-[999] bg-black flex items-center justify-center" onClick={handleOverlayClick}>
+            <button
+                className="absolute top-4 right-4 text-white p-2 rounded bg-black/50"
+                onClick={e => { e.stopPropagation(); onClose(); }}
+                aria-label="Fermer"
+                title="Fermer"
+            >
                 ✕
             </button>
-            <button className="absolute left-4 text-white p-2 rounded bg-black/50" onClick={(e) => { e.stopPropagation(); setIndex((index - 1 + images.length) % images.length); }} aria-label="Précédent">‹</button>
-            <img src={images[index]} alt={`zoom-${index}`} className="max-w-full max-h-full object-contain" onError={(e) => { (e.target as HTMLImageElement).onerror = null; (e.target as HTMLImageElement).src = 'https://placehold.co/1200x900/9CA3AF/ffffff?text=Img'; }} />
-            <button className="absolute right-4 text-white p-2 rounded bg-black/50" onClick={(e) => { e.stopPropagation(); setIndex((index + 1) % images.length); }} aria-label="Suivant">›</button>
+            <button className="absolute left-4 text-white p-2 rounded bg-black/50" onClick={e => { e.stopPropagation(); setIndex((index - 1 + images.length) % images.length); }} aria-label="Précédent">‹</button>
+            <img src={images[index]} alt={`zoom-${index}`} className="max-w-full max-h-full object-contain" onClick={e => e.stopPropagation()} onError={e => { (e.target as HTMLImageElement).onerror = null; (e.target as HTMLImageElement).src = 'https://placehold.co/1200x900/9CA3AF/ffffff?text=Img'; }} />
+            <button className="absolute right-4 text-white p-2 rounded bg-black/50" onClick={e => { e.stopPropagation(); setIndex((index + 1) % images.length); }} aria-label="Suivant">›</button>
         </div>
     );
 }
