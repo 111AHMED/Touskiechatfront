@@ -1,0 +1,23 @@
+http://localhost:8000/api/v1/auth/login/google
+http://localhost:8000/api/v1/auth/mobile/login/google
+
+http://localhost:8000/api/v1/auth/login/facebook
+http://localhost:8000/api/v1/auth/mobile/login/facebook
+
+
+npm run start:dev
+
+
+venv\Scripts\activate
+uvicorn app.main:app --reload
+
+# sans cache 
+venv\Scripts\activate
+set PYTHONUNBUFFERED=1 && uvicorn app.main:app --reload
+  
+# mode prod
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4 --no-access-log
+
+
+# run seeds
+python c:\Users\fribourg\Desktop\touskiee\app\seeds\structure_seeds.py

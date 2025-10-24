@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+motor
+pydantic
+python-dotenv
+httpx
+authlib
+python-jose[cryptography]
+itsdangerous  # Required for session middleware
+pydantic[email]
+pydantic-settings #v2
+python-json-logger
+slowapi
+numpy
+spacy

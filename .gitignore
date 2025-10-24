@@ -1,41 +1,54 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Ignore log files
+*.log
+logs/
+logs/*.log
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+# Ignore environment files
+.env
 
-# testing
-/coverage
+# Virtual Environment
+venv/
+.env/
 
-# next.js
-/.next/
-/out/
+# Python Compiled Files
+*.pyc
+*.pyo
+__pycache__/
 
-# production
-/build
+# Generated Files
+/build/
+/dist/
+*.egg-info/
 
-# misc
+# IDE/Editor Files
+.vscode/
+.idea/
+*.iml
+
+# OS-Specific
 .DS_Store
-*.pem
-
-# debug
+Thumbs.db
+# Logs
+logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+node_modules
+dist
+dist-ssr
+*.local
 
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

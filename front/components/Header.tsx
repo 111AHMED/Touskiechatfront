@@ -1,13 +1,42 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '../context/AuthProvider';
 import SearchModal from './SearchModal';
 
 export default function Header() {
     const [searchQuery, setSearchQuery] = useState('');
     const router = useRouter();
     const [showSearch, setShowSearch] = useState(false);
+    const [showAuthModal, setShowAuthModal] = useState(false);
+    const [showAlertsModal, setShowAlertsModal] = useState(false);
+    // no dropdown: clicking profile goes directly to account when connected
+    const { user, refreshSession } = useAuth();
+
+    // no dropdown click-outside handling needed
+
+    // Close modals on Escape
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                setShowAuthModal(false);
+                setShowAlertsModal(false);
+            }
+        };
+        document.addEventListener('keydown', onKey);
+        return () => document.removeEventListener('keydown', onKey);
+    }, []);
+
+    const handleGoogleSignIn = () => {
+        const base = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+        // Build frontend callback URL (where FastAPI should redirect after successful auth)
+        const frontendCallback = (process.env.NEXT_PUBLIC_FRONTEND_CALLBACK || window.location.origin + '/auth/callback');
+        // Backend route expects /api/v1/auth/login/google
+        const oauthUrl = `${base}/api/v1/auth/login/google?redirect_uri=${encodeURIComponent(frontendCallback)}`;
+        // Redirect to FastAPI OAuth start endpoint
+        window.location.href = oauthUrl;
+    };
 
     const handleLanguageToggle = () => {
         console.log("Language toggle initiated (FR/AR). This would switch the application's text.");
@@ -108,18 +137,90 @@ export default function Header() {
                             </svg>
                         </button>
 
-                        {/* Profile Icon */}
-                        <button
-                            className="text-gray-600 hover:text-accent transition duration-150 p-2 rounded-full hover:bg-gray-100"
-                            title="Profil Utilisateur"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </button>
+                        {/* Profile Icon — opens modal */}
+                        <div className="relative">
+                            <button
+                                className="text-gray-600 hover:text-accent transition duration-150 p-1.5 rounded-full hover:bg-gray-100"
+                                title="Profil Utilisateur"
+                                onClick={() => {
+                                    if (user) router.push('/account');
+                                    else setShowAuthModal(true);
+                                }}
+                                aria-haspopup={user ? 'false' : 'dialog'}
+                            >
+                                {user && user.picture ? (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img src={user.picture} alt="avatar" className="h-7 w-7 rounded-full object-cover" />
+                                ) : (
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                )}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            {/* Auth Modal */}
+            {showAuthModal && (
+                <div className="fixed inset-0 z-40 flex items-center justify-center">
+                    {/* overlay */}
+                    <div
+                        className="absolute inset-0 bg-black bg-opacity-50"
+                        onClick={() => setShowAuthModal(false)}
+                        aria-hidden
+                    />
+
+                    {/* modal content */}
+                    <div className="relative z-50 w-full max-w-md mx-4 bg-white rounded-lg shadow-xl">
+                        <div className="flex justify-between items-start px-6 py-4 border-b">
+                            <h3 className="text-lg font-semibold">Bienvenue sur Touskie !</h3>
+                            <button
+                                onClick={() => setShowAuthModal(false)}
+                                className="text-gray-400 hover:text-gray-600"
+                                aria-label="Fermer"
+                            >
+                                ✕
+                            </button>
+                        </div>
+                        <div className="px-6 py-4">
+                            <p className="text-sm text-gray-600 mb-4">Connectez-vous avec sécurité</p>
+
+                            <button
+                                onClick={handleGoogleSignIn}
+                                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded hover:bg-gray-50"
+                            >
+                                <svg className="h-5 w-5" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                                    <g>
+                                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.7 1.22 9.19 3.22l6.85-6.85C36.68 2.36 30.74 0 24 0 14.82 0 6.73 5.06 2.69 12.44l7.98 6.2C12.13 13.13 17.62 9.5 24 9.5z" />
+                                        <path fill="#34A853" d="M46.1 24.55c0-1.64-.15-3.22-.42-4.74H24v9.01h12.42c-.54 2.9-2.18 5.36-4.65 7.01l7.19 5.59C43.98 37.13 46.1 31.3 46.1 24.55z" />
+                                        <path fill="#FBBC05" d="M10.67 28.65c-1.13-3.36-1.13-6.99 0-10.35l-7.98-6.2C.7 16.36 0 20.09 0 24s.7 7.64 2.69 12.44l7.98-6.2z" />
+                                        <path fill="#4285F4" d="M24 48c6.48 0 11.93-2.15 15.9-5.85l-7.19-5.59c-2.01 1.35-4.59 2.14-8.71 2.14-6.38 0-11.87-3.63-13.33-8.79l-7.98 6.2C6.73 42.94 14.82 48 24 48z" />
+                                    </g>
+                                </svg>
+                                <span>Se connecter avec Google</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Alerts Modal (dev / placeholder) */}
+            {showAlertsModal && (
+                <div className="fixed inset-0 z-40 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setShowAlertsModal(false)} aria-hidden />
+                    <div className="relative z-50 w-full max-w-md mx-4 bg-white rounded-lg shadow-xl">
+                        <div className="flex justify-between items-start px-6 py-4 border-b">
+                            <h3 className="text-lg font-semibold">Alertes de prix</h3>
+                            <button onClick={() => setShowAlertsModal(false)} className="text-gray-400 hover:text-gray-600">✕</button>
+                        </div>
+                        <div className="px-6 py-4">
+                            <p className="text-sm text-gray-600">Vous n'avez pas encore d'alertes. Cliquez sur un produit pour en créer une.</p>
+                        </div>
+                    </div>
+                </div>
+            )}
         </header>
     );
 }
