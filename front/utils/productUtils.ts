@@ -80,7 +80,7 @@ export const generateBotResponse = (query: string): string => {
     const lowerQuery = query.toLowerCase();
 
     if (lowerQuery.includes('hello') || lowerQuery.includes('hi') || lowerQuery.includes('bonjour')) {
-        return "Ahlan ! Bonjour ! Je suis l'Assistant TOUSKIE, prêt à vous aider à naviguer dans notre boutique multi-vendeurs. Quel type de produits vous intéresse aujourd'hui ?";
+        return "Ahlan ! Bonjour ! Je suis l'Assistant Touskié, prêt à vous aider à naviguer dans notre boutique multi-vendeurs. Quel type de produits vous intéresse aujourd'hui ?";
     } else if (lowerQuery.includes('oil') || lowerQuery.includes('food') || lowerQuery.includes('nourriture') || lowerQuery.includes('épice') || lowerQuery.includes('datte')) {
         return "Excellente idée ! J'ai immédiatement filtré et mis à jour le panneau de suggestions avec des produits alimentaires (comme nos nouvelles Dattes Deglet Nour) et d'épicerie de qualité supérieure de nos fournisseurs locaux certifiés. Que pensez-vous de cette sélection ?";
     } else if (lowerQuery.includes('bag') || lowerQuery.includes('fashion') || lowerQuery.includes('sac') || lowerQuery.includes('mode') || lowerQuery.includes('bijoux') || lowerQuery.includes('t-shirt')) {

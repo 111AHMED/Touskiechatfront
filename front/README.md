@@ -1,4 +1,4 @@
-# TOUSKIE Chat - Next.js Version
+# Touskié Chat - Next.js Version
 
 This is a Next.js conversion of the original HTML/CSS/JS chat application. The application has been completely restructured into a modern React-based architecture with TypeScript support.
 

@@ -78,7 +78,7 @@ app.include_router(auth_router)
 
 @app.get("/")
 async def root():
-    return {"message": "Touskie"}
+    return {"message": "Touskié"}
 
 # Example of applying rate limiting to a specific route
 @app.get("/limited")

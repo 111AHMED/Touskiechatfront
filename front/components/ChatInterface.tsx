@@ -258,7 +258,7 @@ export default function ChatInterface({
             {/* Chat Header (Title + Clear Button) */}
             <div className="flex justify-between items-center mb-4 border-b pb-2">
                 <h2 className="text-2xl font-semibold text-gray-800">
-                    <span className="text-primary">TOUSKIE</span> Assistant Chat
+                    <span className="text-primary">Touskié</span> Assistant Chat
                 </h2>
                 {/* Clear Chat Button for usability */}
                 <button
@@ -283,7 +283,7 @@ export default function ChatInterface({
                         <div className={`max-w-lg ${message.isUser ? 'bg-user-bubble text-white' : 'bg-gray-100 text-gray-700'}
               p-3 rounded-xl ${message.isUser ? 'rounded-br-none' : 'rounded-tl-none'} shadow-sm message-animate`}>
                             {!message.isUser && (
-                                <p className="font-semibold text-primary/90">TOUSKIE Assistant</p>
+                                <p className="font-semibold text-primary/90">Touskié Assistant</p>
                             )}
                             <p>{message.text}</p>
                             {!message.isUser && message.suggestions && message.suggestions.length > 0 && (
@@ -297,7 +297,7 @@ export default function ChatInterface({
                 {isLoading && (
                     <div className="flex justify-start">
                         <div className="max-w-lg bg-gray-100 p-3 rounded-xl rounded-tl-none shadow-sm text-gray-700">
-                            <p className="font-semibold text-primary/90 mb-2">TOUSKIE Assistant</p>
+                            <p className="font-semibold text-primary/90 mb-2">Touskié Assistant</p>
                             <div className="flex items-center space-x-2">
                                 <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-primary"></div>
                                 <p className="text-sm">Recherche en cours...</p>

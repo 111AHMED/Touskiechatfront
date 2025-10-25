@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "TOUSKIE.tn - Assistant Chat Multi-vendeurs",
+  title: "Touskié.tn - Assistant Chat Multi-vendeurs",
   description: "Marketplace multi-vendeurs tunisien avec assistant IA pour e-commerce",
 };
 

@@ -49,7 +49,7 @@ export default function Header() {
             <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-4">
                 <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                     {/* Logo */}
-                    <h1 className="brand" aria-label="TOUSKIE.tn - Marketplace Tunisienne">
+                    <h1 className="brand" aria-label="Touskié.tn - Marketplace Tunisienne">
                         {/* Emblem: circle + AI-search (network nodes + magnifying glass) */}
                         <svg className="brand-svg" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
                             <defs>
@@ -92,10 +92,10 @@ export default function Header() {
                             </g>
                         </svg>
                         <span className="brand-wordmark">
-                            <span className="primary">TOUSKIE</span><span className="accent">.tn</span>
+                            <span className="primary">Touskié</span><span className="accent">.tn</span>
                             <span className="brand-tag">Tout. Tunisien. IA pour e‑commerce</span>
                         </span>
-                        <span className="sr-only">TOUSKIE.tn — marketplace multi‑vendeurs (Tunisian AI for e‑commerce)</span>
+                        <span className="sr-only">Touskié.tn — marketplace multi‑vendeurs (Tunisian AI for e‑commerce)</span>
                     </h1>
 
                     {/* Global Site Search - Full width on mobile */}
@@ -175,7 +175,7 @@ export default function Header() {
                     {/* modal content */}
                     <div className="relative z-50 w-full max-w-md mx-4 bg-white rounded-lg shadow-xl">
                         <div className="flex justify-between items-start px-6 py-4 border-b">
-                            <h3 className="text-lg font-semibold">Bienvenue sur Touskie !</h3>
+                            <h3 className="text-lg font-semibold">Bienvenue sur Touskié !</h3>
                             <button
                                 onClick={() => setShowAuthModal(false)}
                                 className="text-gray-400 hover:text-gray-600"

@@ -17,7 +17,7 @@ export default function Home() {
     messages: [
       {
         id: '1',
-        text: "Bonjour ! Bienvenue sur TOUSKIE.tn, votre marketplace multi-vendeurs. Je suis là pour vous aider à trouver le produit parfait. Dites-moi ce que vous cherchez !",
+        text: "Bonjour ! Bienvenue sur Touskié.tn, votre marketplace multi-vendeurs. Je suis là pour vous aider à trouver le produit parfait. Dites-moi ce que vous cherchez !",
         isUser: false,
         timestamp: new Date()
       }

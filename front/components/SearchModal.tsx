@@ -203,7 +203,7 @@ export default function SearchModal({ open, onCloseAction }: SearchModalProps) {
                                 </svg>
                             </div>
                             <div>
-                                <div className="text-sm font-semibold">TOUSKIE.tn</div>
+                                <div className="text-sm font-semibold">Touskié.tn</div>
                                 <div className="text-xs text-gray-500">Recherche</div>
                             </div>
                         </div>
